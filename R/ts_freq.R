@@ -7,6 +7,9 @@
 #' @return list
 #' @keywords internal
 #' @description returns list of median interval in seconds, days, inferred sampling frequency, etc.
+#' @importFrom lubridate parse_date_time
+#' @importFrom stats median
+#' @importFrom dplyr case_when
 ts_freq <- function(df, dateName = "Date", pltName = "plt_name", repName = NULL, depth = FALSE) {
 
   # validate inputs
@@ -36,7 +39,7 @@ ts_freq <- function(df, dateName = "Date", pltName = "plt_name", repName = NULL,
 
   # Handle different possible formats automatically
   if (!inherits(dates_raw, c("Date", "POSIXct", "POSIXt"))) {
-    dates <- suppressWarnings(lubridate::parse_date_time(
+    dates <- suppressWarnings(parse_date_time(
       dates_raw,
       orders = c("Ymd HMS", "Ymd HM", "Ymd H", "Ymd", "mdY", "dmy", "ymd"),
       tz = "UTC"
@@ -54,10 +57,10 @@ ts_freq <- function(df, dateName = "Date", pltName = "plt_name", repName = NULL,
 
   # Compute intervals
   diffs <- diff(dates)
-  dt <- as.numeric(stats::median(diffs, na.rm = TRUE), units = "secs")
+  dt <- as.numeric(median(diffs, na.rm = TRUE), units = "secs")
 
   # --- 5. Map to human-readable frequency -----------------------------------
-  freq <- dplyr::case_when(
+  freq <- case_when(
     dt < 60 ~ "sub-minute",
     dt < 3600 ~ "minutely",
     dt < 86400 ~ "hourly",

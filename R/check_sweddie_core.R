@@ -1,14 +1,8 @@
 #' Check whether an object contains SWEDDIE core tables
 #'
 #' @param x The object to check
-#' @description A valid SWEDDIE object is a list with the following elements,
-#' all of which must be \code{\link{data.frame}} objects:
-#' \itemize{
-#' \item{\code{experiment}}{ Experiment}
-#' \item{\code{site}}{ Site}
-#' \item{\code{plot}}{ Plot}
-#' }
-#' @return TRUE or FALSE.
+#' @description A valid SWEDDIE object is a list with the following elements: experiment, site, plot
+#' @return logical
 #' @keywords internal
 check_sweddie_core <- function(x) {
   # Database is a list and must have all the following data frames

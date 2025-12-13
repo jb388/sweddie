@@ -1,9 +1,12 @@
-#' Read template files
+#' Read core template files
 #'
 #' @param metaDir core template directory
 #' @param return should an empty template list be returned ("template") or the meta data file itself?
 #' @return A list with core template tables or core meta data
-read_meta <- function(metaDir, return = "template") {
+#' @description loads
+#' @importFrom stats setNames
+#' @importFrom utils read.csv
+read_core_templates <- function(metaDir, return = "template") {
   # get dir name as needed
   if (missing(metaDir)) {
     metaDir <- "~/eco-warm/data/sweddie/metadata/core"

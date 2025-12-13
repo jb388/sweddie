@@ -7,7 +7,7 @@
 check_numeric <- function(x, xname) {
   stopifnot(is.character(xname))
 
-  if (!is.numeric(type.convert(x, as.is = FALSE))) {
+  if (!is.numeric(utils::type.convert(x, as.is = FALSE))) {
     warning("Non-numeric values in ", xname, " column")
   }
 }

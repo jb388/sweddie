@@ -1,19 +1,18 @@
-#' Check that column names in the template and meta data files match.
+#' Check that column names in the template and metadata files match.
 #'
-#' @param metadata list of core template files
 #' @param tableName specific table name to check
 #' @param datIn input data to check
 #' @param err error counter; defaults to 0
 #' @return error counter "err"
-#' @note This is typically called only from \code{\link{checkColNms}}.
+#' @note This is typically only called from \code{\link{compile_core}}.
 #' @keywords internal
 # checks column names
-checkColNms <- function(tableName, datIn, err, file = outfile) {
+check_col_nms <- function(tableName, datIn, err,...) {
 
   vcat("\t", tableName, "\n")
 
   # check for template
-  metadata <- readCore(return = "dd")
+  metadata <- read_core_templates(return = "dd")
 
   # check that required data files are present (experiment, site, plot)
   if (!any(grepl(tableName, names(datIn)))) {
