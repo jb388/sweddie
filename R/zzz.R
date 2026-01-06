@@ -1,7 +1,7 @@
 #' Package load hook
 #'
 #' Initialize package-level options and internal state when the SWEDDIE package
-#' is loaded. This function sets default logging behavior and prepares internal
+#' is loaded. The function sets default logging behavior and prepares internal
 #' environments required by other package functions.
 #'
 #' This function is called automatically by R when the package namespace is
