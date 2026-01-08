@@ -2,4 +2,4 @@ Welcome to the repository for *sweddie*, a companion R package containing data i
 
 This package is still in beta with testing ongoing. Expect the package to be updated beyond 1.0.0. in early 2026.
 
-Eventually we expect to submit the package to CRAN, but we encourage you to install the most recent (beta) version of the package from here. 
+The package may be on CRAN eventually but we encourage you to install the most recent (beta) version of the package from here. 
