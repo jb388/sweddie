@@ -6,8 +6,8 @@
 .RData*
 .Ruserdata
 .Rapp.history
-.Rproj
+*.Rproj
 #ignore binaries
-.tar.gz
+*.tar.gz
 ##ignore excel temp files
 ~$*
