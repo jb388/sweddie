@@ -7,5 +7,7 @@
 .Ruserdata
 .Rapp.history
 .Rproj
+#ignore binaries
+.tar.gz
 ##ignore excel temp files
 ~$*
