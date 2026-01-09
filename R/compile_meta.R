@@ -50,16 +50,27 @@ compile_meta <- function(DIR = "~/eco-warm/data",
     # get site dir paths
     exp.ls <- list.dirs(file.path(DIR, "experiments"), recursive = FALSE)
     exp.dir <- exp.ls[match(expName, basename(exp.ls))]
-    stopifnot(dir.exists(exp.dir))
+
+    if (!dir.exists(exp.dir)) {
+      vcat("Directory does not exist:", exp.dir, "\n")
+      return(NULL)
+    }
 
     vcat("\n\nCompiling metadata files in", exp.dir, "\n", rep("-", 30), "\n")
 
     # Check input and meta directories
     dat.dir <- file.path(exp.dir, "input_data")
-    stopifnot(dir.exists(dat.dir))
+    if (!dir.exists(dat.dir)) {
+      vcat("Input data directory does not exist:", dat.dir, "\n")
+      return(NULL)
+    }
     dat.dir.ls <- list.files(dat.dir, full.names = TRUE)
+
     mta.dir <- file.path(exp.dir, "meta")
-    stopifnot(dir.exists(mta.dir))
+    if (!dir.exists(mta.dir)) {
+      vcat("Metadata directory does not exist:", mta.dir, "\n")
+      return(NULL)
+    }
     mta.dir.ls <- list.files(mta.dir, full.names = TRUE)
 
     # FLMD and DD files
@@ -68,7 +79,10 @@ compile_meta <- function(DIR = "~/eco-warm/data",
 
     invisible(cr_add(mta.dir))  # ensure EOL
 
-    if (length(flmd.ls) == 0 | length(dd.ls) == 0) return(NULL)
+    if (length(flmd.ls) == 0 && length(dd.ls) == 0) {
+      vcat("No FLMD or DD files found for experiment:", expName, "\n")
+      return(NULL)
+    }
 
     # Non-standard files
     ix <- which(!(basename(mta.dir.ls) %in% c(basename(flmd.ls), basename(dd.ls))))
@@ -90,6 +104,12 @@ compile_meta <- function(DIR = "~/eco-warm/data",
       vcat("\tThe following input data files are missing data dictionaries and will not be ingested:\n",
            basename(dat.dir.ls)[ix], "\n")
       dat.dir.ls <- dat.dir.ls[-ix]
+    }
+
+    # If no files remain after filtering
+    if (length(dd.ls) == 0 && length(flmd.ls) == 0) {
+      vcat("No valid metadata files remain after filtering for experiment:", expName, "\n")
+      return(NULL)
     }
 
     # Read files
