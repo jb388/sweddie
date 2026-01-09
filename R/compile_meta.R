@@ -13,13 +13,12 @@ compile_meta <- function (DIR = "~/eco-warm/data", expName, verbose = TRUE, writ
   # Constants
   TIMESTAMP <- format(Sys.time(), "%y%m%d-%H%M")
 
-  # Set output file
-  outfile <- ""
   if (write_report) {
     outfile <- file.path(DIR, paste0("sweddie/database/logs/coreLog", "_", TIMESTAMP, ".txt"))
     invisible(file.create(outfile))
     .sweddie_log_opts$append  <- TRUE
   } else {
+    outfile <- ""
     .sweddie_log_opts$append  <- FALSE
   }
 
@@ -27,23 +26,17 @@ compile_meta <- function (DIR = "~/eco-warm/data", expName, verbose = TRUE, writ
   .sweddie_log_opts$verbose <- verbose
   .sweddie_log_opts$file <- outfile
 
+  vcat("\n\nCompiling metadata files in", exp.dir, "\n", rep("-", 30), "\n")
+
   # get site dir paths and variable directory names
   exp.ls <- list.dirs(file.path(DIR, "experiments"), recursive = FALSE)
   exp.dir <- exp.ls[match(expName, basename(exp.ls))]
   stopifnot(dir.exists(exp.dir))
 
   # report
-  if (write_report) {
-    vcat("\n\nCompiling metadata files in", exp.dir, "\n", rep("-", 30), "\n")
-  } else {
-    outfile <- ""
-  }
-
   if (length(list.files(exp.dir)) == 0) {
-    if (write_report) {
-      vcat("\n", expName, "\n\n", "No files found in ", exp.dir)
-    }
-    return (NULL)
+    vcat("\n", expName, "\n\n", "No files found in ", exp.dir)
+    return(NULL)
   } else {
     dat.dir <- file.path(exp.dir, "input_data")
     stopifnot(dir.exists(dat.dir))
