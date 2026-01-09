@@ -26,14 +26,14 @@ compile_meta <- function (DIR = "~/eco-warm/data", expName, verbose = TRUE, writ
   .sweddie_log_opts$verbose <- verbose
   .sweddie_log_opts$file <- outfile
 
-  vcat("\n\nCompiling metadata files in", exp.dir, "\n", rep("-", 30), "\n")
-
   # get site dir paths and variable directory names
   exp.ls <- list.dirs(file.path(DIR, "experiments"), recursive = FALSE)
   exp.dir <- exp.ls[match(expName, basename(exp.ls))]
   stopifnot(dir.exists(exp.dir))
 
-  # report
+  # start log
+  vcat("\n\nCompiling metadata files in", exp.dir, "\n", rep("-", 30), "\n")
+
   if (length(list.files(exp.dir)) == 0) {
     vcat("\n", expName, "\n\n", "No files found in ", exp.dir)
     return(NULL)
