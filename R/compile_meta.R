@@ -22,6 +22,14 @@ compile_meta <- function(DIR = "~/eco-warm/data",
     invisible(file.create(outfile))
     .sweddie_log_opts$append <- TRUE
     .sweddie_log_opts$file   <- outfile
+
+    # --- Main log header ---
+    vcat(
+      "SWEDDIE Metadata Log\n\n",
+      paste0(" ", Sys.time(), "\n"),
+      paste(rep("-", 30), collapse = ""), "\n\n"
+    )
+
   } else {
     .sweddie_log_opts$append <- FALSE
     .sweddie_log_opts$file   <- ""
