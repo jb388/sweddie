@@ -94,7 +94,7 @@ compile_meta <- function (DIR = "~/eco-warm/data", expName, verbose = TRUE, writ
           lapply(y$fileName, function(z)
             grep(glob2rx(z), x))))), function(d) length(d) == 0)))
       if (length(ix) > 0) {
-        vcat("\tThe following input data files are missing flmd and will not be ingested:\n", basename(dat.ls)[ix], "\n", file = outfile, append = append, verbose = verbose)
+        vcat("\tThe following input data files are missing flmd and will not be ingested:\n", basename(dat.ls)[ix], "\n")
         dat.ls <- dat.ls[-ix]
       }
     }
