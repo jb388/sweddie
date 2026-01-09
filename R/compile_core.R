@@ -8,7 +8,7 @@
 #' @description returns SWEDDIE core database object with meta, site, and plot tables
 #' @importFrom stats setNames
 #' @importFrom utils read.csv
-compile_core <- function (DIR = "~/eco-warm/data/sweddie", write_report = TRUE, verbose = TRUE) {
+compile_core <- function (DIR = "~/eco-warm/data/", write_report = TRUE, verbose = TRUE) {
 
   # Constants
   DB_DIR <- "database"
@@ -18,7 +18,7 @@ compile_core <- function (DIR = "~/eco-warm/data/sweddie", write_report = TRUE, 
 
   # Set output file
   if (write_report) {
-    outfile <- file.path(DIR, DB_DIR, paste0("logs/coreLog", "_", TIMESTAMP, ".txt"))
+    outfile <- file.path(DIR, "sweddie", DB_DIR, paste0("logs/coreLog", "_", TIMESTAMP, ".txt"))
     invisible(file.create(outfile))
     .sweddie_log_opts$file <- outfile
   }
@@ -33,22 +33,22 @@ compile_core <- function (DIR = "~/eco-warm/data/sweddie", write_report = TRUE, 
 
   vcat("\n\nCompiling data files in", S_DIR, "\n", rep("-", 30), "\n")
 
-  data_dirs <- list.dirs(file.path(DIR, S_DIR), full.names = TRUE, recursive = FALSE)
+  data_dirs <- list.dirs(file.path(DIR, "sweddie", S_DIR), full.names = TRUE, recursive = FALSE)
   if (!length(data_dirs)) {
     vcat("No data directories found!\n")
     return(NULL)
   }
 
   # ensure EOL carriage return present
-  invisible(cr_add(file.path(DIR, S_DIR)))
+  invisible(cr_add(file.path(DIR, "sweddie", S_DIR)))
 
   vcat("Compiling and checking core data...\n\n")
 
-  # # check if previous database object exists in database directory, and only update file if new data exisit
-  # if (file.exists(file.path(DIR, DB_DIR, LIST_FILE))) {
+  # # check if previous database object exists in database directory, and only update file if new data exists
+  # if (file.exists(file.path(DIR, "sweddie", DB_DIR, LIST_FILE))) {
   #
   #   # load existing database
-  #   load(file.path(DIR, DB_DIR, LIST_FILE)) # obj "coreDat"
+  #   load(file.path(DIR, "sweddie", DB_DIR, LIST_FILE)) # obj "coreDat"
   #
   #   # convert to character and coerce to list of data frames
   #   coreDat_chr <- lapplydf(lapply(core_data, function(x) lapply(x, as.character)))

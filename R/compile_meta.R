@@ -1,6 +1,6 @@
 #' Compile SWEDDIE metadata
 #'
-#' @param DIR parent directory in which SWEDDIE 'database' directory is stored
+#' @param DIR local directory for SWEDDIE database
 #' @param expName name of experiment to retrieve metadata from; must match standard names
 #' @param write_report logical; should report be written to a file?
 #' @param verbose logical
@@ -8,16 +8,15 @@
 #' @export
 #' @description returns SWEDDIE metadata object
 #' @importFrom utils glob2rx
-compile_meta <- function (DIR = "~/eco-warm/data/sweddie", expName, verbose = TRUE, write_report = FALSE) {
+compile_meta <- function (DIR = "~/eco-warm/data", expName, verbose = TRUE, write_report = FALSE) {
 
   # Constants
-  DB_DIR <- "database"
   TIMESTAMP <- format(Sys.time(), "%y%m%d-%H%M")
 
   # Set output file
   outfile <- ""
   if (write_report) {
-    outfile <- file.path(DIR, DB_DIR, paste0("logs/coreLog", "_", TIMESTAMP, ".txt"))
+    outfile <- file.path(DIR, paste0("sweddie/logs/coreLog", "_", TIMESTAMP, ".txt"))
     invisible(file.create(outfile))
     .sweddie_log_opts$append  <- TRUE
   } else {
@@ -29,7 +28,7 @@ compile_meta <- function (DIR = "~/eco-warm/data/sweddie", expName, verbose = TR
   .sweddie_log_opts$file <- outfile
 
   # get site dir paths and variable directory names
-  exp.ls <- list.dirs("../data/experiments", recursive = FALSE)
+  exp.ls <- list.dirs(file.path(DIR, "experiments"), recursive = FALSE)
   exp.dir <- exp.ls[match(expName, basename(exp.ls))]
   stopifnot(dir.exists(exp.dir))
 
