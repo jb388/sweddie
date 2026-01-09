@@ -10,6 +10,20 @@
 #' @importFrom utils glob2rx
 compile_meta <- function (DIR = "~/eco-warm/data", expName, verbose = TRUE, write_report = FALSE) {
 
+  # vectorized
+  if (length(expName) > 1) {
+    res <- lapply(expName, function(x) {
+      compile_meta(
+        DIR = DIR,
+        expName = x,
+        verbose = verbose,
+        write_report = write_report
+      )
+    })
+    names(res) <- expName
+    return(res)
+  }
+
   # Constants
   TIMESTAMP <- format(Sys.time(), "%y%m%d-%H%M")
 
