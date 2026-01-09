@@ -2,7 +2,7 @@
 % Please edit documentation in R/compile_meta.R
 \name{compile_meta}
 \alias{compile_meta}
-\title{Compile SWEDDIE metadata}
+\title{Compile SWEDDIE metadata (vectorized)}
 \usage{
 compile_meta(
   DIR = "~/eco-warm/data",
@@ -14,7 +14,7 @@ compile_meta(
 \arguments{
 \item{DIR}{local directory for SWEDDIE database}
 
-\item{expName}{name of experiment to retrieve metadata from; must match standard names}
+\item{expName}{name(s) of experiment(s) to retrieve metadata from; must match standard names}
 
 \item{verbose}{logical}
 
@@ -24,5 +24,5 @@ compile_meta(
 list
 }
 \description{
-returns SWEDDIE metadata object
+returns SWEDDIE metadata object. Supports multiple experiments.
 }
