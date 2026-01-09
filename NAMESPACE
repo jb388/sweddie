@@ -2,7 +2,6 @@
 
 export(compile_core)
 export(compile_meta)
-export(compile_meta_one)
 export(lapply_df)
 export(sweddie_set_logging)
 importFrom(dplyr,case_when)
