@@ -10,6 +10,23 @@
 #' @importFrom utils glob2rx
 compile_meta <- function (DIR = "~/eco-warm/data", expName, verbose = TRUE, write_report = FALSE) {
 
+  ## configure logging
+  if (write_report) {
+    TIMESTAMP <- format(Sys.time(), "%y%m%d-%H%M")
+    outfile <- file.path(
+      DIR, "sweddie/database/logs",
+      paste0("metaLog_", TIMESTAMP, ".txt")
+    )
+    invisible(file.create(outfile))
+    .sweddie_log_opts$append  <- TRUE
+    .sweddie_log_opts$file    <- outfile
+  } else {
+    .sweddie_log_opts$append  <- FALSE
+    .sweddie_log_opts$file    <- ""
+  }
+
+  .sweddie_log_opts$verbose <- verbose
+
   # vectorized
   if (length(expName) > 1) {
     res <- lapply(expName, function(x) {
@@ -17,28 +34,19 @@ compile_meta <- function (DIR = "~/eco-warm/data", expName, verbose = TRUE, writ
         DIR = DIR,
         expName = x,
         verbose = verbose,
-        write_report = write_report
+        write_report = FALSE
       )
     })
     names(res) <- expName
     return(res)
   }
 
-  # Constants
-  TIMESTAMP <- format(Sys.time(), "%y%m%d-%H%M")
-
-  if (write_report) {
-    outfile <- file.path(DIR, paste0("sweddie/database/logs/coreLog", "_", TIMESTAMP, ".txt"))
-    invisible(file.create(outfile))
-    .sweddie_log_opts$append  <- TRUE
-  } else {
-    outfile <- ""
-    .sweddie_log_opts$append  <- FALSE
-  }
-
-  # configure logging for this run
-  .sweddie_log_opts$verbose <- verbose
-  .sweddie_log_opts$file <- outfile
+  vcat(
+    "\n",
+    paste0("===== Compiling metadata for experiment: ", expName, " =====\n"),
+    rep("-", 60),
+    "\n"
+  )
 
   # get site dir paths and variable directory names
   exp.ls <- list.dirs(file.path(DIR, "experiments"), recursive = FALSE)
