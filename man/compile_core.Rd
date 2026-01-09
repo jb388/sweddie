@@ -4,11 +4,7 @@
 \alias{compile_core}
 \title{Build core SWEDDIE database}
 \usage{
-compile_core(
-  DIR = "~/eco-warm/data/sweddie",
-  write_report = TRUE,
-  verbose = TRUE
-)
+compile_core(DIR = "~/eco-warm/data/", write_report = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{DIR}{parent directory in which SWEDDIE 'database' directory is stored}

@@ -5,14 +5,14 @@
 \title{Compile SWEDDIE metadata}
 \usage{
 compile_meta(
-  DIR = "~/eco-warm/data/sweddie",
+  DIR = "~/eco-warm/data",
   expName,
   verbose = TRUE,
   write_report = FALSE
 )
 }
 \arguments{
-\item{DIR}{parent directory in which SWEDDIE 'database' directory is stored}
+\item{DIR}{local directory for SWEDDIE database}
 
 \item{expName}{name of experiment to retrieve metadata from; must match standard names}
 
