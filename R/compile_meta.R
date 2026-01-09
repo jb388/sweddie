@@ -16,7 +16,7 @@ compile_meta <- function (DIR = "~/eco-warm/data", expName, verbose = TRUE, writ
   # Set output file
   outfile <- ""
   if (write_report) {
-    outfile <- file.path(DIR, paste0("sweddie/logs/coreLog", "_", TIMESTAMP, ".txt"))
+    outfile <- file.path(DIR, paste0("sweddie/database/logs/coreLog", "_", TIMESTAMP, ".txt"))
     invisible(file.create(outfile))
     .sweddie_log_opts$append  <- TRUE
   } else {
