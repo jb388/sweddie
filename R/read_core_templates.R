@@ -14,12 +14,10 @@ read_core_templates <- function(metaDir, return = "template") {
   # create template list
   ls <- list.files(metaDir, full.names = TRUE)
   ls <- ls[grep("_dd", ls)]
-  meta <- lapply(
-    setNames(ls, nm = sub(pattern = "(.*)\\..*$", replacement = "\\1", basename(ls))),
-    read.csv)
+  meta <- setNames(lapply(ls, read.csv), nm = c("experiment", "plot", "site"))
   if (return == "template") {
     lapply(
-      setNames(meta, nm = c("experiment", "plot", "site")), function(x) {
+      meta, function(x) {
         setNames(data.frame(matrix(ncol = nrow(x), nrow = 0)), x[ , 1])
       })
   } else {
