@@ -14,7 +14,7 @@ compile_meta(
 \arguments{
 \item{DIR}{local directory for SWEDDIE database}
 
-\item{expName}{name of experiment to retrieve metadata from; must match standard names}
+\item{expName}{name(s) of experiment(s) to retrieve metadata from; must match standard names}
 
 \item{verbose}{logical}
 

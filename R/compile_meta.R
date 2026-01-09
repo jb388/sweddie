@@ -1,46 +1,52 @@
 #' Compile SWEDDIE metadata
 #'
 #' @param DIR local directory for SWEDDIE database
-#' @param expName name of experiment to retrieve metadata from; must match standard names
+#' @param expName name(s) of experiment(s) to retrieve metadata from; must match standard names
 #' @param write_report logical; should report be written to a file?
 #' @param verbose logical
 #' @return list
 #' @export
 #' @description returns SWEDDIE metadata object
 #' @importFrom utils glob2rx
-compile_meta <- function (DIR = "~/eco-warm/data", expName, verbose = TRUE, write_report = FALSE) {
+compile_meta <- function(DIR = "~/eco-warm/data",
+                         expName,
+                         verbose = TRUE,
+                         write_report = FALSE) {
 
-  # Constants
-  TIMESTAMP <- format(Sys.time(), "%y%m%d-%H%M")
-
+  # --- Logging setup ---
   if (write_report) {
-
-    outfile <- file.path(DIR, paste0("sweddie/database/logs/coreLog", "_", TIMESTAMP, ".txt"))
+    TIMESTAMP <- format(Sys.time(), "%y%m%d-%H%M")
+    log_dir <- file.path(DIR, "sweddie/database/logs")
+    if (!dir.exists(log_dir)) dir.create(log_dir, recursive = TRUE)
+    outfile <- file.path(log_dir, paste0("metaLog_", TIMESTAMP, ".txt"))
     invisible(file.create(outfile))
-    .sweddie_log_opts$append  <- TRUE
-
+    .sweddie_log_opts$append <- TRUE
+    .sweddie_log_opts$file   <- outfile
   } else {
-    outfile <- ""
-    .sweddie_log_opts$append  <- FALSE
+    .sweddie_log_opts$append <- FALSE
+    .sweddie_log_opts$file   <- ""
   }
-
-  # configure logging for this run
   .sweddie_log_opts$verbose <- verbose
-  .sweddie_log_opts$file <- outfile
 
+  # --- Internal worker for a single experiment ---
+  .compile_meta_one <- function(DIR, expName) {
 
-  # get site dir paths and variable directory names
-  exp.ls <- list.dirs(file.path(DIR, "experiments"), recursive = FALSE)
-  exp.dir <- exp.ls[match(expName, basename(exp.ls))]
-  stopifnot(dir.exists(exp.dir))
+    # Header
+    vcat(
+      "\n",
+      paste0("===== Compiling metadata for experiment: ", expName, " =====\n"),
+      rep("-", 60),
+      "\n"
+    )
 
-  # start log
-  vcat("\n\nCompiling metadata files in", exp.dir, "\n", rep("-", 30), "\n")
+    # get site dir paths
+    exp.ls <- list.dirs(file.path(DIR, "experiments"), recursive = FALSE)
+    exp.dir <- exp.ls[match(expName, basename(exp.ls))]
+    stopifnot(dir.exists(exp.dir))
 
-  if (length(list.files(exp.dir)) == 0) {
-    vcat("\n", expName, "\n\n", "No files found in ", exp.dir)
-    return(NULL)
-  } else {
+    vcat("\n\nCompiling metadata files in", exp.dir, "\n", rep("-", 30), "\n")
+
+    # Check input and meta directories
     dat.dir <- file.path(exp.dir, "input_data")
     stopifnot(dir.exists(dat.dir))
     dat.dir.ls <- list.files(dat.dir, full.names = TRUE)
@@ -48,86 +54,81 @@ compile_meta <- function (DIR = "~/eco-warm/data", expName, verbose = TRUE, writ
     stopifnot(dir.exists(mta.dir))
     mta.dir.ls <- list.files(mta.dir, full.names = TRUE)
 
-    # check metadata directory
-    flmd.ls <- mta.dir.ls[which(grepl("_flmd.csv", mta.dir.ls))]
-    dd.ls <- mta.dir.ls[which(grepl("_dd.csv", mta.dir.ls))]
+    # FLMD and DD files
+    flmd.ls <- mta.dir.ls[grepl("_flmd.csv", mta.dir.ls)]
+    dd.ls   <- mta.dir.ls[grepl("_dd.csv", mta.dir.ls)]
 
-    # ensure EOL carriage return present
-    invisible(cr_add(mta.dir))
+    invisible(cr_add(mta.dir))  # ensure EOL
 
-    if (length(flmd.ls) == 0 | length(dd.ls) == 0) {
-      return (NULL)
+    if (length(flmd.ls) == 0 | length(dd.ls) == 0) return(NULL)
+
+    # Non-standard files
+    ix <- which(!(basename(mta.dir.ls) %in% c(basename(flmd.ls), basename(dd.ls))))
+    if (length(ix) > 0) {
+      vcat("\tMeta directory contains non-standard files that will be ignored:\n",
+           basename(mta.dir.ls)[ix], "\n")
     }
 
-    # check for non-standard files
-    if (sum(length(flmd.ls), length(dd.ls)) != length(mta.dir.ls)) {
-      ix <- which(!(basename(mta.dir.ls) %in% c(basename(flmd.ls), basename(dd.ls))))
-      vcat("\t meta directory contains the following non-standard files that will be ignored:\n", basename(mta.dir.ls)[ix], "\n")
-    }
-
-    # get valid input data names from dd.ls
-    dat.ls <- dat.dir.ls[which(basename(dat.dir.ls) %in% basename(gsub("_dd", "", dd.ls)))]
-
-    # exclude dd files without matching input data
+    # Match input data with DD files
+    dat.ls <- dat.dir.ls[basename(dat.dir.ls) %in% basename(gsub("_dd", "", dd.ls))]
     ix <- which(is.na(match(basename(gsub("_dd", "", dd.ls)), basename(dat.dir.ls))))
     if (length(ix) > 0) {
-      vcat("\tThe following data dictionary files are missing input data and will not be ingested:\n", basename(dd.ls)[ix], "\n")
+      vcat("\tThe following data dictionary files are missing input data and will not be ingested:\n",
+           basename(dd.ls)[ix], "\n")
       dd.ls <- dd.ls[-ix]
     }
-
-    # report input data missing dd file
     ix <- which(is.na(match(basename(dat.dir.ls), basename(gsub("_dd", "", dd.ls)))))
     if (length(ix) > 0) {
-      vcat("\tThe following input data files are missing data dictionaries and will not be ingested:\n", basename(dat.dir.ls)[ix], "\n")
+      vcat("\tThe following input data files are missing data dictionaries and will not be ingested:\n",
+           basename(dat.dir.ls)[ix], "\n")
       dat.dir.ls <- dat.dir.ls[-ix]
     }
 
-    # read dd files
+    # Read files
     dd <- lapply(dd.ls, read.csv, strip.white = TRUE)
     names(dd) <- gsub("\\.csv", "", basename(dd.ls))
-
-    # read flmd files
     flmd <- lapply(flmd.ls, read.csv, strip.white = TRUE)
     names(flmd) <- gsub("\\.csv", "", basename(flmd.ls))
 
-    # exclude input files without matching flmd
+    # Check input files against FLMD
     if (length(dat.ls) > 0) {
       ix <- which(unlist(lapply(lapply(basename(dat.ls), function(x)
-        unlist(lapply(flmd, function(y)
-          lapply(y$fileName, function(z)
-            grep(glob2rx(z), x))))), function(d) length(d) == 0)))
+        unlist(lapply(flmd, function(y) lapply(y$fileName, function(z) grep(glob2rx(z), x))))),
+        function(d) length(d) == 0)))
       if (length(ix) > 0) {
-        vcat("\tThe following input data files are missing flmd and will not be ingested:\n", basename(dat.ls)[ix], "\n")
+        vcat("\tThe following input data files are missing FLMD and will not be ingested:\n",
+             basename(dat.ls)[ix], "\n")
         dat.ls <- dat.ls[-ix]
       }
     }
 
-    # exclude flmd files without matching input data
-    flmd.na <- Filter(Negate(is.null), lapply(flmd, function(x)
-      names(unlist(
-        sapply(
-          sapply(
-            glob2rx(x$fileName), grep, basename(dat.ls)),
-          function(y) which(length(y) == 0))))))
-    if (length(unlist(flmd.na)) > 0) {
-      flmd.na.nms <- unlist(lapply(flmd, function(x) {
-        ix <- unlist(sapply(unlist(flmd.na), grep, x$fileName))
-        x$fileName[ix]
-      }))
-      flmd <- lapply(flmd, function(x) x[-ix, ])
-      vcat(paste0("The following input files are listed in the flmd file '", names(flmd.na.nms), ".csv', but cannot be found:\n", flmd.na.nms, "\n"))
-    }
-
-    # check input data names against dd
-    dat.ls.colNms <- lapply(
-      setNames(dat.dir.ls, nm = basename(dat.dir.ls)), get_CSV_nms)
+    # Check columns
+    dat.ls.colNms <- lapply(setNames(dat.dir.ls, basename(dat.dir.ls)), get_CSV_nms)
     for (i in seq_along(dat.ls.colNms)) {
-      if (any(!(dat.ls.colNms[[i]] %in% dd[[i]][["colName"]]))) {
-        miss <- dat.ls.colNms[[i]][which(!(dat.ls.colNms[[i]] %in% dd[[i]][["colName"]]))]
+      miss <- dat.ls.colNms[[i]][!(dat.ls.colNms[[i]] %in% dd[[i]][["colName"]])]
+      if (length(miss) > 0) {
         vcat("Data dictionary file '", basename(dd.ls[i]), "' missing column/s: ", miss, "\n")
       }
     }
+
     return(list(flmd = flmd, dd = dd))
   }
-}
 
+  # --- Batch/vectorized execution ---
+  if (length(expName) > 1) {
+    res <- lapply(expName, function(x) {
+      tryCatch(
+        .compile_meta_one(DIR, x),
+        error = function(e) {
+          vcat("ERROR processing experiment:", x, "-", e$message, "\n")
+          NULL
+        }
+      )
+    })
+    names(res) <- expName
+    return(res)
+  }
+
+  # Single experiment
+  .compile_meta_one(DIR, expName)
+}
