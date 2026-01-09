@@ -31,19 +31,19 @@ compile_meta <- function(DIR = "~/eco-warm/data",
   # ---- Vectorized wrapper ----
   if (length(expName) > 1) {
     res <- lapply(expName, function(x) {
-      compile_meta_one(DIR = DIR, expName = x, verbose = verbose)
+      compile_meta_one(DIR = DIR, expName = x)
     })
     names(res) <- expName
     return(res)
   }
 
   # ---- Single experiment ----
-  compile_meta_one(DIR = DIR, expName = expName, verbose = verbose)
+  compile_meta_one(DIR = DIR, expName = expName)
 }
 
 #' @keywords internal
 #' Internal function: compiles metadata for a single experiment
-compile_meta_one <- function(DIR, expName, verbose = TRUE) {
+compile_meta_one <- function(DIR, expName,...) {
 
   # ---- Experiment-specific log header ----
   vcat(
