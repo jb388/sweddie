@@ -1,0 +1,49 @@
+Data Dictionary File Guide
+2024.06.21
+
+Data dictionary files (*_dd.csv) provide information about the data types, methodologies, and sensors used for each variable in a data file. Each submitted data file, e.g., "dat.csv", must be accompanied by a data dictionary file using the naming convention of the file name followed by "_dd", e.g., "dat_dd.csv". Horizontal data orientation is preferred, but vertical orientation is acceptable.  Data dictionary files contain the following columns (* indicates a column is REQUIRED):
+
+*"fileName"
+- provide the name of the submitted data file (e.g, "datTemplate.csv"). Suggested naming convention is to replace "Template" with a short descriptor of the data, e.g., "datCO2flx.csv", etc.
+
+*"colName"
+- provide the names of each column in the submitted data file, e.g., "ecoFlx" for ecosystem CO2 flux measurements, etc.
+
+*"description"
+- provide an extended description of the data in the named column. For example, for CO2 flux data entered with colName equal to "ecoFlx", the description could be, "CO2 concentration of ecosystem respiration flux from static chambers".
+
+*"unit"
+- give units for data. SI units preferred. Use negative exponents to represent denominator values, e.g., "g CO2 m^-2 d-1" rather than "g/cm3".
+
+*"siteName"
+- ID for site (only needed if data organized vertically, i.e., if site name is NOT provided as a column in the data file)
+
+*"plotName"
+- ID for plot (only needed if data organized vertically, i.e., if plot name is NOT provided as a column in the data file)
+
+*"dataType"
+- what kind of data is in the column? Possible values include: numeric, string (text), date, etc.
+
+"sensorMakeModel"
+- if applicable, what is the sensor make and model used to collect the data in the column?
+
+"methodName"
+- if applicable, what method was used to obtain the data in the column? For example, "static chamber" could be entered for ecosystem respiration CO2 fluxes.
+
+"methodNotes"
+- basic information useful for understanding how data were collected. For the static chamber example, you could give the measurement frequency for CO2 concentration.
+
+"methodDOI"
+- if applicable, provide a DOI for the cited reference.
+
+"depthTopM"
+- if depth (height) information not provided in the data file, please give the upper value for the depth or height at which the data were measured in meters. If data come from a point measurement rather than an interval, only a value for "depthTopM" needs to be entered.
+
+"depthBottomM"
+- if depth (height) information not provided in the data file, please give the lower value for the depth or height at which the data were measured in meters. If data come from a point measurement rather than an interval, "depthBottomM" can be left blank and the depth (height) measurement should be given under "depthTopM".
+
+"depthHeight"
+- are values given as depths (positive values correspond with increasingly deeper measurements), or heights (positive values correspond to increasingly greater distances above the ground)?
+
+"zeroRef"
+- what is the reference zero point for the depth (height) measurements given? For example, soil depths are typically given as positive values with an assumed zero point of the interface between mineral soil and the atmosphere or the organic layer. In contrast, aboveground measurements typically assume a zero point of the interface between the soil surface and the atmosphere. Suggested values here are: "atmosphere-soil", "mineral soil".

@@ -5,20 +5,23 @@
 \title{Compile SWEDDIE metadata}
 \usage{
 compile_meta(
-  DIR = "~/eco-warm/data",
+  DIR = "~/sweddie_db",
   expName = NULL,
   verbose = TRUE,
-  write_report = FALSE
+  write_report = FALSE,
+  EOL_err = FALSE
 )
 }
 \arguments{
-\item{DIR}{local directory for SWEDDIE database}
+\item{DIR}{local directory for SWEDDIE}
 
 \item{expName}{name(s) of experiment(s) to retrieve metadata from; must match standard names}
 
 \item{verbose}{logical}
 
 \item{write_report}{logical; should report be written to a file?}
+
+\item{EOL_err}{set to true if you encounter an end of line (EOL) error}
 }
 \value{
 list

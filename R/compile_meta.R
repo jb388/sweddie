@@ -1,23 +1,24 @@
 #' Compile SWEDDIE metadata
 #'
-#' @param DIR local directory for SWEDDIE database
+#' @param DIR local directory for SWEDDIE
 #' @param expName name(s) of experiment(s) to retrieve metadata from; must match standard names
 #' @param write_report logical; should report be written to a file?
 #' @param verbose logical
+#' @param EOL_err set to true if you encounter an end of line (EOL) error
 #' @return list
 #' @export
 #' @description returns SWEDDIE metadata object
 #' @importFrom utils glob2rx
-compile_meta <- function(DIR = "~/eco-warm/data",
+compile_meta <- function(DIR = "~/sweddie_db",
                          expName = NULL,
                          verbose = TRUE,
-                         write_report = FALSE) {
+                         write_report = FALSE,
+                         EOL_err = FALSE) {
 
   # --- Logging setup ---
   if (write_report) {
     TIMESTAMP <- format(Sys.time(), "%y%m%d-%H%M")
-    log_dir <- file.path(DIR, "sweddie/database/logs")
-    if (!dir.exists(log_dir)) dir.create(log_dir, recursive = TRUE)
+    log_dir <- file.path(DIR, "core_logs")
     outfile <- file.path(log_dir, paste0("metaLog_", TIMESTAMP, ".txt"))
     invisible(file.create(outfile))
     .sweddie_log_opts$append <- TRUE
@@ -48,7 +49,7 @@ compile_meta <- function(DIR = "~/eco-warm/data",
     )
 
     # get site dir paths
-    exp.ls <- list.dirs(file.path(DIR, "experiments"), recursive = FALSE)
+    exp.ls <- list.dirs(file.path(DIR, "sweddie"), recursive = FALSE)
     exp.dir <- exp.ls[match(expName, basename(exp.ls))]
 
     if (!dir.exists(exp.dir)) {
@@ -59,14 +60,14 @@ compile_meta <- function(DIR = "~/eco-warm/data",
     vcat("\n\nCompiling metadata files in", exp.dir, "\n", rep("-", 30), "\n")
 
     # Check input and meta directories
-    dat.dir <- file.path(exp.dir, "input_data")
+    dat.dir <- file.path(exp.dir, "dat/input_data")
     if (!dir.exists(dat.dir)) {
       vcat("Input data directory does not exist:", dat.dir, "\n")
       return(NULL)
     }
     dat.dir.ls <- list.files(dat.dir, full.names = TRUE)
 
-    mta.dir <- file.path(exp.dir, "meta")
+    mta.dir <- file.path(exp.dir, "dat/meta")
     if (!dir.exists(mta.dir)) {
       vcat("Metadata directory does not exist:", mta.dir, "\n")
       return(NULL)
@@ -77,7 +78,8 @@ compile_meta <- function(DIR = "~/eco-warm/data",
     flmd.ls <- mta.dir.ls[grepl("_flmd.csv", mta.dir.ls)]
     dd.ls   <- mta.dir.ls[grepl("_dd.csv", mta.dir.ls)]
 
-    invisible(cr_add(mta.dir))  # ensure EOL
+    # ensure EOL carriage return present
+    if (EOL_err) invisible(cr_add(mta.dir))
 
     if (length(flmd.ls) == 0 && length(dd.ls) == 0) {
       vcat("No FLMD or DD files found for experiment:", expName, "\n")

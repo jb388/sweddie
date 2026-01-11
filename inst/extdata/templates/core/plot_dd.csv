@@ -1,0 +1,16 @@
+col_name,req,type,description,units,notes
+exp_name,yes,string,Experiment ID string,,
+sit_name,,string,Site ID string,,
+plt_name,yes,string,Plot ID string,,must be unique
+plt_block,,string,Experimental block,,
+plt_subBlock,,string,Secondary blocking ID,,
+plt_rep,,string,Plot replicate ID,,
+plt_notes,,string,Additional notes about plot data,,
+plt_lat,,num,Plot latitude,decimal degrees,
+plt_long,,num,Plot longitude,decimal degrees,
+plt_treat_heat,yes,string,Control or heated,control;treatment,
+plt_heat_level,yes,num,Temperature relative to ambient,degrees C,
+plt_treat_add_name,,string,Additional treatment name,,use for treatments applied in addition to heating
+plt_treat_add_level,,num,Additional treatment level,,"numerical coding for treatments, i.e., either quantitative data or coded factors"
+plt_treat_add_units,,string,Additional treatment level units,,units for numerical data or factor levels
+plt_notes,,string,notes for interpreting data,,

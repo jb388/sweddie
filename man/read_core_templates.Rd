@@ -4,12 +4,12 @@
 \alias{read_core_templates}
 \title{Read core template files}
 \usage{
-read_core_templates(metaDir, return = "template")
+read_core_templates(templateDir, return = "template")
 }
 \arguments{
-\item{metaDir}{core template directory}
+\item{templateDir}{core template directory}
 
-\item{return}{should an empty template list be returned ("template") or the meta data file itself?}
+\item{return}{should an empty template list be returned ("template") or the metadata file itself?}
 }
 \value{
 A list with core template tables or core meta data

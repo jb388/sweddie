@@ -1,0 +1,15 @@
+﻿col_name,type,description
+emailAddress,string,your email address
+Name,string,your name
+Data contact name,string,data contact name (if different from you)
+Data contact email,email,data contact email (if different from yours)
+fileName,string,"name of submitted file including file extension; names should be unique and be as descriptive as possible about the file contents. Use only letters (e.g. camelCase), numbers, and underscores. Do not include spaces. "
+expName,string,name of warming experiment (where samples were collected/observations made)
+varName,string,"what data variable is contained in this dataset? 'varName' is a semi-controlled field; i.e., new names should only be entered if matching name cannot be found among previous entries"
+description,string,"file description; i.e., a brief description (minimum 30 characters) distinguishing the submitted data from other data at the site, for example, further details about the data type and collection information: e.g., ""soil temperature sensor data from 2012-2014"", ""soil moisture TDR data from growing season over the period 2018-2022"", ""air temperature at 1 m for period 2022-2024"", ""chamber-based ecosystem CO2 fluxes for warming plots"", etc."
+UTC_offset,numeric,"local offset from Coordinated Universal Time, in hours. Give offset for standard time, not day light savings time, and specify if offset is negative, e.g., ""-6"". "
+fileVersionNumber,string,"Use this field to indicate whether this file is replacing a previously submitted dataset, e.g., for file ""soilTemp2012_2018_v2"", you could put ""2"". Version numbering is handled on the data provider end, not assigned automatically. Leave blank if this is the first version submitted."
+startDate,date,"The earliest date in the file. All dates must follow the ISO 8601 standard (YYYY-MM-DD HH:MM:SS) and be completed to known precision (e.g., YYYY-MM, YYYY). Do not report the time zone here."
+endDate,date,"The latest date in the file. All dates must follow the ISO 8601 standard (YYYY-MM-DD HH:MM:SS) and be completed to known precision (e.g., YYYY-MM, YYYY). Do not report the time zone here."
+missingValCodes,string,"Use of ""NA"" is preferred, but not required. Enter multiple values separated by a semicolon, e.g., ""-9999;N/A"". "
+notes,string,"Please provide any pertinent details for interpreting data, e.g., data gaps, equipment issues, etc."

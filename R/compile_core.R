@@ -3,22 +3,21 @@
 #' @param DIR parent directory in which SWEDDIE 'database' directory is stored
 #' @param write_report logical; should report of build be written to a file?
 #' @param verbose logical
+#' @param EOL_err set to true if you encounter an end of line (EOL) error
 #' @return list
 #' @export
-#' @description returns SWEDDIE core database object with meta, site, and plot tables
+#' @description returns SWEDDIE core database object with experiment, site, and plot tables
 #' @importFrom stats setNames
 #' @importFrom utils read.csv
-compile_core <- function (DIR = "~/eco-warm/data/", write_report = TRUE, verbose = TRUE) {
+compile_core <- function (DIR = "~/sweddie_db", write_report = FALSE, verbose = FALSE, EOL_err = FALSE) {
 
   # Constants
-  DB_DIR <- "database"
-  S_DIR <- "siteData"
-  LIST_FILE <- "coreData.rda"
+  DB_DIR <- file.path(DIR, "sweddie")
   TIMESTAMP <- format(Sys.time(), "%y%m%d-%H%M")
 
   # Set output file
   if (write_report) {
-    outfile <- file.path(DIR, "sweddie", DB_DIR, paste0("logs/coreLog", "_", TIMESTAMP, ".txt"))
+    outfile <- file.path(file.path(DIR, "core_logs"), paste0("coreLog_", TIMESTAMP, ".txt"))
     invisible(file.create(outfile))
     .sweddie_log_opts$file <- outfile
   }
@@ -31,46 +30,27 @@ compile_core <- function (DIR = "~/eco-warm/data/", write_report = TRUE, verbose
        "\n", as.character(Sys.time()),
        "\n", rep("-", 15), "\n")
 
-  vcat("\n\nCompiling data files in", S_DIR, "\n", rep("-", 30), "\n")
+  vcat("\n\nCompiling core data files in", DB_DIR,  "\n", rep("-", 30), "\n")
 
-  data_dirs <- list.dirs(file.path(DIR, "sweddie", S_DIR), full.names = TRUE, recursive = FALSE)
+  data_dirs <- list.dirs(DB_DIR, full.names = TRUE, recursive = FALSE)
   if (!length(data_dirs)) {
     vcat("No data directories found!\n")
     return(NULL)
   }
 
   # ensure EOL carriage return present
-  invisible(cr_add(file.path(DIR, "sweddie", S_DIR)))
+  if (EOL_err) invisible(cr_add(DB_DIR))
 
   vcat("Compiling and checking core data...\n\n")
-
-  # # check if previous database object exists in database directory, and only update file if new data exists
-  # if (file.exists(file.path(DIR, "sweddie", DB_DIR, LIST_FILE))) {
-  #
-  #   # load existing database
-  #   load(file.path(DIR, "sweddie", DB_DIR, LIST_FILE)) # obj "coreDat"
-  #
-  #   # convert to character and coerce to list of data frames
-  #   coreDat_chr <- lapplydf(lapply(core_data, function(x) lapply(x, as.character)))
-  #
-  #   # remove old version
-  #   rm(coreDat)
-  #
-  #   # Split each table by entry_name
-  #   coreDat_old <- lapply(coreDat_chr, function(x) split(x, x$exp_name))
-  # } else {
-  #   database <- setNames(vector(mode = "list", length = length(data_dirs)), nm = basename(data_dirs))
-  # }
 
   # define database
   database <- setNames(vector(mode = "list", length = length(data_dirs)), nm = basename(data_dirs))
 
   # compile new templates and check against existing data
   for (d in seq_along(database)) {
-    cat(names(database[d]), "\n")
+
     # get expName
     expName <- names(database[d])
-
     vcat("\n", expName, "\n")
 
     # get tables

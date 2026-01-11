@@ -1,5 +1,6 @@
 #' Harmonization function for ingesting raw data into SWEDDIE
 #'
+#' @param DIR local directory for SWEDDIE
 #' @param expName name of experiment
 #' @param path.dat.csv path to raw data file
 #' @param path.dd.csv path to data dictionary file of raw data
@@ -10,7 +11,7 @@
 #' @importFrom utils menu read.csv write.csv
 #' @importFrom lubridate ymd_hms
 #' @export
-inputDat.fx <- function(expName, path.dat.csv, path.dd.csv, append.flmd, ...) {
+ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, append.flmd, ...) {
 
   # define allowable cols
   allowable_cols <- c("date", "depth", "depth_lower", "depth_upper", "variable", "variance", "replicates", "plt_name")
@@ -18,6 +19,9 @@ inputDat.fx <- function(expName, path.dat.csv, path.dd.csv, append.flmd, ...) {
   # read raw data files
   dat <- read.csv(path.dat.csv, strip.white = TRUE, check.names = FALSE, as.is = TRUE)
   dd <- read.csv(path.dd.csv, strip.white = TRUE, check.names = FALSE, as.is = TRUE)
+
+  # get metadata
+  sweddie_meta <- compile_meta(verbose = FALSE)
 
   # check data orientation
   hzn.vrt <- menu(
@@ -187,8 +191,8 @@ inputDat.fx <- function(expName, path.dat.csv, path.dd.csv, append.flmd, ...) {
   }
 
   # define data and metadata directories
-  DATA_DIR <- path.expand(file.path("~/eco-warm/data/experiments", expName, "input_data"))
-  META_DIR <- path.expand(file.path("~/eco-warm/data/experiments", expName, "meta"))
+  DATA_DIR <- file.path(DIR, "sweddie", expName, "dat", "data")
+  META_DIR <- file.path(DIR, "sweddie", expName, "dat", "meta")
 
   # create data files
   dat.ls <- setNames(lapply(seq_along(dat.nms), function(i) {

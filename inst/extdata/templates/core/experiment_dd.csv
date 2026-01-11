@@ -1,0 +1,30 @@
+col_name,req,type,description,units,notes
+exp_name,yes,string,Name of experiment,,
+heat_levels,yes,num,Temperature relative to ambient control,deg C,
+heat_duration,yes,string,Duration of year heated,year round; partial,"Partial includes growing season only, winter only, etc. The full heating schedule (time series of active heating) should be provided in the 'datHeat' table. Please enter the planned heating duration here, i.e., if heat has been turned off due to equipment malfunction or for other reasons beyond the scope of the experiment this can be ignored for the purposes of this field."
+heat_mtd_aboveGround,yes,string,Type of aboveground heating infrastructure,,"For example, ""infrared heaters"", ""open topped chamber"", etc. If aboveground heating absent, enter ""none""."
+heat_mtd_belowGround,yes,string,Type of belowground heating infrastructure,,"For example, ""resistance cable"", ""snow fence"", ""resistence rods"", etc. If belowground heating absent, enter ""none""."
+treatment_add_name,,string,Treatment/s imposed in addition to heating,,"For example, ""elevated CO2"", ""drought"", etc."
+treatment_add_levels,,string,Additional treatment levels,,"Enter levels of additional treatment. For example,"
+treatment_add_units,,string,Specify units for additional treatment levels,,
+treatment_add_date_i,,date,Date additional treatment/s initiated,,YYYY-MM-DD
+treatment_add_date_f,,date,Date additional treatment/s ended,,YYYY-MM-DD
+sensors,,string,list of sensor types,,"e.g., ""soil moisture"", ""soil temperature"", ""solar radiation"", ""windspeed"", etc."
+heat_BG_date_i,yes,date,Date belowground heating treatment initiated,,YYYY-MM-DD
+heat_BG_date_f,,date,Date belowground heating treatment ended,,YYYY-MM-DD
+heat_AG_date_i,yes,date,Date belowground heating treatment initiated,,YYYY-MM-DD
+heat_AG_date_f,,date,Date belowground heating treatment ended,,YYYY-MM-DD
+heat_BG_cable_depth,,num,Depth of heating cable,m,Specify each depth at which heating cables are buried; use positive numbers; zero defined as the upper boundary of the mineral soil
+heat_BG_rod_depth,,num,Depth of heating rod,m,Specify maximum depth of heating
+heat_BG_pwr,,num,Power rating of belowground heating equipment,,"e.g., w m-2"
+heat_BG_sensor_depths,,num,Depth of temperature sensors,m,Specify each depth at which temperature sensors are buried (or at which temperature is measured); use positive numbers; zero defined as the upper boundary of the mineral soil
+heat_AG_pwr,,num,Power rating of aboveground heating equipment,,"e.g., w m-2"
+heat_AG_height,,num,Height of aboveground heating,m,Specify each height at which active heating infrastructure is installed; use positive numbers; zero defined as the soil-atmosphere interface
+heat_AG_sensor_height,,num,Height of aboveground temperature sensors,m,Specify each height at which temperature sensors installed; use positive numbers; zero defined as the soil-atmosphere interface
+heat_notes,,string,Notes regarding heating,,Provide any additional information useful for understanding heating infrastructure
+heat_BG_temp_sensor,,string,Make and model of belowground temperature sensors,,
+heat_AG_temp_sensor,,string,Make and model of aboveground temperature sensors,,
+soil_moisture_depths,,num,Depth of soil moisture sensors,,Specify each depth at which soil moisture sensors are buried (or at which soil moisture is measured); use positive numbers; zero defined as the upper boundary of the mineral soil
+soil_moisture_sensor,,string,Make and model of soil moisture sensors,,
+flux_mtd,,string,Flux method,,"e.g., static chamber, dynamic chamber"
+fluxes,,string,Analytes measured,,"e.g., CO2, CH4, N2O, etc."

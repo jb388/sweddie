@@ -1,5 +1,6 @@
 #' Helper for creating or appending file level metadata file
 #'
+#' @param DIR local directory for SWEDDIE
 #' @param expName name of experiment
 #' @param dataFileName name of input file (must be *.csv file, do not include extension)
 #' @param dateColName supply known text string for column in input data containing dates
@@ -9,45 +10,41 @@
 #' @param orders optionally supply date format, e.g., %m-%d-%Y
 #' @param ... used internally for optional arguments passed to function
 #' @details interactive function for filling out or updating file level metadata (FLMD)
-#' @importFrom utils menu write.csv
+#' @importFrom utils menu read.csv write.csv
 #' @export
-flmd_helper <- function(expName, dataFileName, dateColName, rename = FALSE, append = TRUE, write_out = TRUE, orders = NULL, ...) {
-
-  # print dataFileName
-  cat(paste(dataFileName, "\n"))
+flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName, rename = FALSE, append = TRUE, write_out = TRUE, orders = NULL, ...) {
 
   # list optionals
   optArgs <- list(...)
 
   # set data directory path
-  DATA_DIR <- file.path("~/eco-warm/data/experiments", expName, "input_data")
-  META_DIR <- file.path("~/eco-warm/data/experiments", expName, "meta")
+  DATA_DIR <- file.path(DIR, "sweddie", expName, "dat", "data")
+  META_DIR <- file.path(DIR, "sweddie", expName, "dat", "meta")
 
   # get flmd template
   if (append) {
     files <- list.files(
       META_DIR,
       full.names = TRUE)
-    flmd.s <- as.list(files[grepl("flmd", files)])
+    flmd.s <- files[grepl("flmd", files)]
     if (length(flmd.s) == 0) {
       stop ("cannot append record: no flmd files found")
     }
     if (length(flmd.s) > 1) {
-      i <- menu(
-        basename(flmd.s),
-        title = "To which FLMD should new record be appended?")
-    } else {
-      i <- 1
+      stop ("multiple flmd files found but only one is allowed")
     }
-    flmdName <- flmd.s[[i]]
-    flmd <- read.csv(flmdName)
+    flmd <- read.csv(flmd.s)
   } else {
-    flmd <- read.csv("~/eco-warm/data/sweddie/metadata/flmd_SWEDDIE.csv")
+    # get template
+    flmd <- read.csv(system.file("extdata", "sweddie", "metadata", "flmd_SWEDDIE.csv", package = "sweddie"))
     flmdName <- file.path(META_DIR, paste0(expName, "_", "flmd.csv"))
   }
 
   # get data
   data <- read.csv(file.path(DATA_DIR, paste0(dataFileName, ".csv")))
+
+  # get metadata
+  sweddie_meta <- compile_meta(verbose = FALSE)
 
   # fill out flmd
   nm <- setNames(vector(length = ncol(flmd), mode = "list"), names(flmd))

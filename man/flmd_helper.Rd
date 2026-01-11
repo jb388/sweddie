@@ -5,6 +5,7 @@
 \title{Helper for creating or appending file level metadata file}
 \usage{
 flmd_helper(
+  DIR = "~/sweddie_db",
   expName,
   dataFileName,
   dateColName,
@@ -16,6 +17,8 @@ flmd_helper(
 )
 }
 \arguments{
+\item{DIR}{local directory for SWEDDIE}
+
 \item{expName}{name of experiment}
 
 \item{dataFileName}{name of input file (must be *.csv file, do not include extension)}

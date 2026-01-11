@@ -4,7 +4,12 @@
 \alias{compile_core}
 \title{Build core SWEDDIE database}
 \usage{
-compile_core(DIR = "~/eco-warm/data/", write_report = TRUE, verbose = TRUE)
+compile_core(
+  DIR = "~/sweddie_db",
+  write_report = FALSE,
+  verbose = FALSE,
+  EOL_err = FALSE
+)
 }
 \arguments{
 \item{DIR}{parent directory in which SWEDDIE 'database' directory is stored}
@@ -12,10 +17,12 @@ compile_core(DIR = "~/eco-warm/data/", write_report = TRUE, verbose = TRUE)
 \item{write_report}{logical; should report of build be written to a file?}
 
 \item{verbose}{logical}
+
+\item{EOL_err}{set to true if you encounter an end of line (EOL) error}
 }
 \value{
 list
 }
 \description{
-returns SWEDDIE core database object with meta, site, and plot tables
+returns SWEDDIE core database object with experiment, site, and plot tables
 }
