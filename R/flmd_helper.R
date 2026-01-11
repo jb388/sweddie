@@ -9,7 +9,6 @@
 #' @param orders optionally supply date format, e.g., %m-%d-%Y
 #' @details interactive function for filling out or updating file level metadata (FLMD)
 #' @export
-# checks column names
 flmd_helper <- function(expName, dataFileName, dateColName, rename = FALSE, append = TRUE, write_out = TRUE, orders = NULL, ...) {
 
   # print dataFileName

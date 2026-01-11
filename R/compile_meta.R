@@ -9,7 +9,7 @@
 #' @description returns SWEDDIE metadata object
 #' @importFrom utils glob2rx
 compile_meta <- function(DIR = "~/eco-warm/data",
-                         expName,
+                         expName = NULL,
                          verbose = TRUE,
                          write_report = FALSE) {
 
@@ -140,6 +140,10 @@ compile_meta <- function(DIR = "~/eco-warm/data",
     }
 
     return(list(flmd = flmd, dd = dd))
+  }
+
+  if (is.null(expName)) {
+    expName <- basename(list.dirs(file.path(DIR, "experiments"), recursive = FALSE))
   }
 
   # --- Batch/vectorized execution ---

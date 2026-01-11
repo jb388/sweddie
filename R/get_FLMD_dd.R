@@ -9,7 +9,7 @@ get_FLMD_dd <- function(exp_names = NULL) {
     exp_names <- list.files(path.expand("~/eco-warm/data/experiments"))
   }
   flmd_dd.ls <- lapply(
-    lapply(exp_names, read_core_templates, verbose = TRUE), function(x) {
+    lapply(exp_names, read_core_templates), function(x) {
       if (length(x$flmd) == 0) {
         NULL
       } else {
