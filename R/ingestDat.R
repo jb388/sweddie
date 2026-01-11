@@ -246,7 +246,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     lapply(seq_along(dat.ls), function(i) {
       flmd_helper(
         expName = expName,
-        dataFileName = names(dat.ls)[i],
+        dataFileName = sub(".csv", "", names(dat.ls)[i]),
         dateColName = names(dat)[ix.tim],
         append = append.flmd,
         write_out = TRUE, ...)
