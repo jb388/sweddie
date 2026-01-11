@@ -35,12 +35,12 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   get_valid_indices <- function(df, colType) {
 
     # print indices
-    vcat(paste0(1:length(names(df)), ": ", names(df)), sep = "\n")
+    cat(paste0(1:length(names(df)), ": ", names(df)), sep = "\n")
 
     while (TRUE) {
 
       # Prompt the user to enter row indices or 'cancel'
-      vcat(paste0("Specify ", "'", colType, "'", " column/s by index # (comma separated) or enter '0' to cancel: "))
+      cat(paste0("Specify ", "'", colType, "'", " column/s by index # (comma separated) or enter '0' to cancel: "))
       input <- readline()
 
       # Check if the user wants to cancel
@@ -83,7 +83,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     if (sel != 0) {
       dat.nms[i] <- varName_opts[sel]
     } else {
-      dat.nms[i] <- readline(prompt = paste0("Please describe the variable in data column ", dat.nms.in[i], "\n"))
+      dat.nms[i] <- readline(prompt = paste0("Please describe the variable in data column: ", dat.nms.in[i], "\n"))
     }
   }
 
