@@ -6,7 +6,7 @@
 \usage{
 compile_meta(
   DIR = "~/eco-warm/data",
-  expName,
+  expName = NULL,
   verbose = TRUE,
   write_report = FALSE
 )

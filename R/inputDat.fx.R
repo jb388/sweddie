@@ -4,7 +4,11 @@
 #' @param path.dat.csv path to raw data file
 #' @param path.dd.csv path to data dictionary file of raw data
 #' @param append.flmd should new rows be added to existing FLMD file?
+#' @param ... used internally for optional arguments passed to function
 #' @details interactive function for harmonizing raw data which outputs dat files and their dd files, and optionally updates FLMD
+#' @importFrom stats na.omit
+#' @importFrom utils menu read.csv write.csv
+#' @importFrom lubridate ymd_hms
 #' @export
 inputDat.fx <- function(expName, path.dat.csv, path.dd.csv, append.flmd, ...) {
 
@@ -64,16 +68,13 @@ inputDat.fx <- function(expName, path.dat.csv, path.dd.csv, append.flmd, ...) {
     }
   }
 
-  # get flmd_dd.ls
-  flmd_dd.ls <- compile_meta(verbose = FALSE)
-
   # print columns names & prompt for req. col indices
   ## data col/s
   ix.dat <- get_valid_indices(dat, "data")
   dat.nms.in <- names(dat)[ix.dat]
   dat.nms <- vector(mode = "list", length = length(dat.nms.in))
   for (i in seq_along(dat.nms)) {
-    varName_opts <- unique(unlist(lapply(lapply(flmd_dd.ls, "[[", "flmd"), function(x) lapply(x, "[[", "varName"))))
+    varName_opts <- unique(unlist(lapply(lapply(sweddie_meta, "[[", "flmd"), function(x) lapply(x, "[[", "varName"))))
     sel <- menu(varName_opts, title = paste0("Does the data in column '", dat.nms.in[i], "' match one of the following variable names? (Enter '0' if none are appropriate)"))
     if (sel != 0) {
       dat.nms[i] <- varName_opts[sel]
@@ -146,7 +147,7 @@ inputDat.fx <- function(expName, path.dat.csv, path.dd.csv, append.flmd, ...) {
 
   # check for database object
   if (!exists("database")) {
-    database <- tryCatch(coreData.fx(verbose = FALSE))
+    database <- compile_core(verbose = FALSE, write_report = FALSE)
   }
 
   # get plt_name column

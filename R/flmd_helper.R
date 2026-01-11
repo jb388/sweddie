@@ -7,7 +7,9 @@
 #' @param append should new rows be added to existing FLMD file?
 #' @param write_out should function write out a FLMD file in *.csv format?
 #' @param orders optionally supply date format, e.g., %m-%d-%Y
+#' @param ... used internally for optional arguments passed to function
 #' @details interactive function for filling out or updating file level metadata (FLMD)
+#' @importFrom utils menu write.csv
 #' @export
 flmd_helper <- function(expName, dataFileName, dateColName, rename = FALSE, append = TRUE, write_out = TRUE, orders = NULL, ...) {
 
@@ -20,11 +22,6 @@ flmd_helper <- function(expName, dataFileName, dateColName, rename = FALSE, appe
   # set data directory path
   DATA_DIR <- file.path("~/eco-warm/data/experiments", expName, "input_data")
   META_DIR <- file.path("~/eco-warm/data/experiments", expName, "meta")
-
-  # check for flmd_dd.ls
-  if (!exists("flmd_dd.ls")) {
-    flmd_dd.ls <- compile_meta(expName = expName, verbose = FALSE)
-  }
 
   # get flmd template
   if (append) {
@@ -114,7 +111,7 @@ flmd_helper <- function(expName, dataFileName, dateColName, rename = FALSE, appe
   for (i in seq_along(nm)) {
     if (is.null(nm[[i]])) {
       if (names(nm)[i] == "varName") {
-        varName_opts <- unique(c(unlist(lapply(lapply(flmd_dd.ls, "[[", "flmd"), function(x) lapply(x, "[[", "varName"))),
+        varName_opts <- unique(c(unlist(lapply(lapply(sweddie_meta, "[[", "flmd"), function(x) lapply(x, "[[", "varName"))),
                                  flmd$varName))
         nm[[i]] <- menu.fx(i, opt = varName_opts)
       } else {

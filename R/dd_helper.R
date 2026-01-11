@@ -3,7 +3,10 @@
 #' @param expName name of experiment
 #' @param dataName input data to check
 #' @param DATA_DIR directory to search for .csv file matching supplied dataName
+#' @param write_out should function write the template file to disk?
+#' @return if write_out = FALSE, data frame of dd template
 #' @details this function creates a data dictionary template file for the supplied input data
+#' @importFrom utils read.csv write.csv
 #' @export
 dd_helper <- function(expName, dataName, DATA_DIR = NULL, write_out = TRUE) {
   if (is.null(DATA_DIR)) {
