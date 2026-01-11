@@ -17,7 +17,7 @@ compile_core <- function (DIR = "~/sweddie_db", write_report = FALSE, verbose = 
 
   # Set output file
   if (write_report) {
-    outfile <- file.path(file.path(DIR, "build_logs"), paste0("build_", TIMESTAMP, ".txt"))
+    outfile <- file.path(file.path(DIR, "build_logs"), paste0("coreLog_", TIMESTAMP, ".txt"))
     invisible(file.create(outfile))
     .sweddie_log_opts$file <- outfile
   }

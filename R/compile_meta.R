@@ -18,8 +18,7 @@ compile_meta <- function(DIR = "~/sweddie_db",
   # --- Logging setup ---
   if (write_report) {
     TIMESTAMP <- format(Sys.time(), "%y%m%d-%H%M")
-    log_dir <- file.path(DIR, "core_logs")
-    outfile <- file.path(log_dir, paste0("metaLog_", TIMESTAMP, ".txt"))
+    outfile <- file.path(DIR, "build_logs", paste0("metaLog_", TIMESTAMP, ".txt"))
     invisible(file.create(outfile))
     .sweddie_log_opts$append <- TRUE
     .sweddie_log_opts$file   <- outfile
