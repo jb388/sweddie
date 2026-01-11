@@ -59,7 +59,7 @@ compile_meta <- function(DIR = "~/sweddie_db",
     vcat("\n\nCompiling metadata files in", exp.dir, "\n", rep("-", 30), "\n")
 
     # Check input and meta directories
-    dat.dir <- file.path(exp.dir, "dat/input_data")
+    dat.dir <- file.path(exp.dir, "dat/data")
     if (!dir.exists(dat.dir)) {
       vcat("Input data directory does not exist:", dat.dir, "\n")
       return(NULL)
