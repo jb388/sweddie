@@ -145,7 +145,7 @@ compile_meta <- function(DIR = "~/sweddie_db",
   }
 
   if (is.null(expName)) {
-    expName <- basename(list.dirs(file.path(DIR, "experiments"), recursive = FALSE))
+    expName <- basename(list.dirs(file.path(DIR, "sweddie"), recursive = FALSE))
   }
 
   # --- Batch/vectorized execution ---

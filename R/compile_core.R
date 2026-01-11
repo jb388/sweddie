@@ -17,7 +17,7 @@ compile_core <- function (DIR = "~/sweddie_db", write_report = FALSE, verbose = 
 
   # Set output file
   if (write_report) {
-    outfile <- file.path(file.path(DIR, "core_logs"), paste0("coreLog_", TIMESTAMP, ".txt"))
+    outfile <- file.path(file.path(DIR, "build_logs"), paste0("build_", TIMESTAMP, ".txt"))
     invisible(file.create(outfile))
     .sweddie_log_opts$file <- outfile
   }
@@ -80,7 +80,7 @@ compile_core <- function (DIR = "~/sweddie_db", write_report = FALSE, verbose = 
     for (i in seq_along(datIn)) {
 
       # check column names
-      err <- sweddie:::check_col_nms(names(datIn)[i], datIn, err)
+      err <- check_col_nms(names(datIn)[i], datIn, err)
 
       # check data types
 
