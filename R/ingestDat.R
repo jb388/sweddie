@@ -137,16 +137,12 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   }
 
   # get date/time col
-  ix.tim <- which(dd$dataType == "date")
+  ix.tim <- which(names(dat) == dd$colName[which(dd$dataType == "date")])
   if (length(ix.tim) > 1) {
-    cat("Data dictionary (dd) file denotes more than one columns with dataType = 'date' \n but only one is allowed. Please update data and dd files\n")
-  } else {
-    ix <- menu(
-      c("yes", "no"),
-      title = paste0("Is '", dd$colName[ix.tim], "' the primary date/time column?"))
-    if (ix != 1) {
-      cat("\nPlease check data and data dictionary files\n")
-    }
+    warning(paste0("Data dictionary (dd) file denotes more than one columns with dataType = 'date' \n but only one is allowed. Please update dd file\n"))
+  }
+  if (length(ix.tim) == 0) {
+    warning(paste0("No columns with dataType = 'date' found in dd file.\n Please update dd file\n"))
   }
 
   # check for database object

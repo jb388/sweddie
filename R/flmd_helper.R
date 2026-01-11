@@ -36,7 +36,7 @@ flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName
     flmd <- read.csv(flmd.s)
   } else {
     # get template
-    flmd <- read.csv(system.file("extdata", "sweddie", "metadata", "flmd_SWEDDIE.csv", package = "sweddie"))
+    flmd <- read.csv(system.file("extdata", "templates", "meta", "flmd_SWEDDIE.csv", package = "sweddie"))
     flmdName <- file.path(META_DIR, paste0(expName, "_", "flmd.csv"))
   }
 
