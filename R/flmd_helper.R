@@ -34,6 +34,7 @@ flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName
       stop ("multiple flmd files found but only one is allowed")
     }
     flmd <- read.csv(flmd.s)
+    flmdName <- flmd.s
   } else {
     # get template
     flmd <- read.csv(system.file("extdata", "templates", "meta", "flmd_SWEDDIE.csv", package = "sweddie"))

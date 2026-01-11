@@ -145,10 +145,8 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     warning(paste0("No columns with dataType = 'date' found in dd file.\n Please update dd file\n"))
   }
 
-  # check for database object
-  if (!exists("database")) {
-    database <- compile_core(verbose = FALSE, write_report = FALSE)
-  }
+  # get core data
+  compile_core <- compile_core(verbose = FALSE, write_report = FALSE)
 
   # get plt_name column
   ix.plt <- which(names(dat) == "plt_name")
