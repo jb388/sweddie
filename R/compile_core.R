@@ -55,10 +55,11 @@ compile_core <- function (DIR = "~/sweddie_db", write_report = FALSE, verbose = 
 
     # get tables
     tbls <- list.files(data_dirs[d], full.names = TRUE)
+    core_tbls <- tbls[grepl(".csv", tbls)]
 
     # read files
     datIn <- lapply(
-      setNames(tbls, nm = sub("\\..*", "", basename(tbls))),
+      setNames(core_tbls, nm = sub("\\..*", "", basename(core_tbls))),
       function(f) {
         df <- read.csv(f, stringsAsFactors = FALSE, strip.white = TRUE)
 
@@ -79,7 +80,7 @@ compile_core <- function (DIR = "~/sweddie_db", write_report = FALSE, verbose = 
     for (i in seq_along(datIn)) {
 
       # check column names
-      err <- check_col_nms(names(datIn)[i], datIn, err)
+      err <- sweddie:::check_col_nms(names(datIn)[i], datIn, err)
 
       # check data types
 

@@ -7,7 +7,7 @@
 compile_meta(
   DIR = "~/sweddie_db",
   expName = NULL,
-  verbose = TRUE,
+  verbose = FALSE,
   write_report = FALSE,
   EOL_err = FALSE
 )

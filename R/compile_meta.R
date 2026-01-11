@@ -11,7 +11,7 @@
 #' @importFrom utils glob2rx
 compile_meta <- function(DIR = "~/sweddie_db",
                          expName = NULL,
-                         verbose = TRUE,
+                         verbose = FALSE,
                          write_report = FALSE,
                          EOL_err = FALSE) {
 
