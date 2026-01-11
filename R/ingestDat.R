@@ -207,10 +207,11 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
       names(dat.ls)[i],
       perl = TRUE
     )
-    nm <- paste0("swdy_", basename(path.dat.csv))
+    nm <- paste0("swdy_", vn_abr, "_", basename(path.dat.csv))
     if (any(grepl(nm, list.files(file.path(DATA_DIR))))) {
       nm <- paste0(readline(prompt = paste0("Duplicate file name detected. Please supply an alternative name for the ", names(dat.ls[i]), " data file", "\n")), ".csv")
     }
+    names(dat.ls)[i] <- nm
     write.csv(
       dat.ls[[i]],
       file = file.path(DATA_DIR, nm),
@@ -229,7 +230,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
       names(dat.ls)[i],
       perl = TRUE
     )
-    nm <- paste0("swdy_", basename(path.dd.csv))
+    nm <- paste0("swdy_", vn_abr, "_", basename(path.dd.csv))
     if (any(grepl(nm, list.files(file.path(META_DIR))))) {
       nm <- paste0(readline(prompt = paste0("Duplicate file name detected. Please supply an alternative name for the ", names(dat.ls[i]), " dd file", "\n")), ".csv")
     }
@@ -245,8 +246,8 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     lapply(seq_along(dat.ls), function(i) {
       flmd_helper(
         expName = expName,
-        dataFileName = names(dat.ls[i]),
-        dateColName = names(dat[ix.tim]),
+        dataFileName = names(dat.ls)[i],
+        dateColName = names(dat)[ix.tim],
         append = append.flmd,
         write_out = TRUE, ...)
     })

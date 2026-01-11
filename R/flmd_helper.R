@@ -52,7 +52,9 @@ flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName
     nm[["name"]] <- "Jeffrey Beem-Miller"
     nm[["email"]] <- "jbeemmiller@lbl.gov"
   }
-  nm[["fileName"]] <- paste0(dataFileName, ".csv")
+  if (is.null(nm[["fileName"]])) {
+    nm[["fileName"]] <- paste0(dataFileName, ".csv")
+  }
   if (is.null(dateColName)) {
     dateColName <- names(data)[
       sapply(data, inherits, what = c("POSIXct", "POSIXt", "Date"))
