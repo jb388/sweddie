@@ -201,7 +201,13 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     dat[ , na.omit(ix)]
   }), nm = dat.nms)
   for (i in seq_along(dat.ls)) {
-    nm <- paste0(names(dat.ls[i]), ".csv")
+    vn_abr <- sub(
+      "^(?:([A-Za-z])\\w*\\s+([A-Za-z])|([A-Za-z]{2})).*",
+      "\\1\\2\\3",
+      names(dat.ls)[i],
+      perl = TRUE
+    )
+    nm <- paste0("swdy_", basename(path.dat.csv))
     if (any(grepl(nm, list.files(file.path(DATA_DIR))))) {
       nm <- paste0(readline(prompt = paste0("Duplicate file name detected. Please supply an alternative name for the ", names(dat.ls[i]), " data file", "\n")), ".csv")
     }
@@ -217,7 +223,13 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     dd[match(names(dat.ls[[i]]), dd$colName), ]
   }), nm = paste0(names(dat.ls), "_dd"))
   for (i in seq_along(dd.ls)) {
-    nm <- paste0(names(dd.ls[i]), ".csv")
+    vn_abr <- sub(
+      "^(?:([A-Za-z])\\w*\\s+([A-Za-z])|([A-Za-z]{2})).*",
+      "\\1\\2\\3",
+      names(dat.ls)[i],
+      perl = TRUE
+    )
+    nm <- paste0("swdy_", basename(path.dd.csv))
     if (any(grepl(nm, list.files(file.path(META_DIR))))) {
       nm <- paste0(readline(prompt = paste0("Duplicate file name detected. Please supply an alternative name for the ", names(dat.ls[i]), " dd file", "\n")), ".csv")
     }
