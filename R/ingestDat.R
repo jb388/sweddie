@@ -146,7 +146,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   }
 
   # get core data
-  compile_core <- compile_core(verbose = FALSE, write_report = FALSE)
+  sweddie_core <- compile_core(verbose = FALSE, write_report = FALSE)
 
   # get plt_name column
   ix.plt <- which(names(dat) == "plt_name")
@@ -162,8 +162,8 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
         ix.plt <- get_valid_indices(dat, "unique plot identifier")
         plt.nms <- names(dat)[ix.plt]
         for (i in seq_along(plt.nms)) {
-          j <- menu(names(database[[expName]]$plot), cat(paste0("\nWhich plot table column matches input data column '", plt.nms[i], "'?\n")))
-          plt.vls <- database[[expName]]$plot[[j]]
+          j <- menu(names(sweddie_core[[expName]]$plot), cat(paste0("\nWhich plot table column matches input data column '", plt.nms[i], "'?\n")))
+          plt.vls <- sweddie_core[[expName]]$plot[[j]]
           dat.vls <- unlist(dat[ix.plt[i]])
           mch <- unique(dat.vls) %in% unique(plt.vls)
           if (!all(mch)) {
@@ -179,9 +179,9 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   }
 
   # check plt_names against plot table
-  plt.nms <- unlist(unique(dat[ix.plt])) %in% database[[expName]]$plot$plt_name
+  plt.nms <- unlist(unique(dat[ix.plt])) %in% sweddie_core[[expName]]$plot$plt_name
   if (any(!plt.nms)) {
-    cat("\nThe following plt_name values do not match entries in the plot: ", unlist(unique(dat[ix.plt]), use.names = FALSE)[which(!plt.nms)], "\nAllowable values: ", database[[expName]]$plot$plt_name)
+    cat("\nThe following plt_name values do not match entries in the plot: ", unlist(unique(dat[ix.plt]), use.names = FALSE)[which(!plt.nms)], "\nAllowable values: ", sweddie_core[[expName]]$plot$plt_name)
   }
 
   # define data and metadata directories
