@@ -13,6 +13,8 @@
 #' @export
 ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, append.flmd, ...) {
 
+  cat(paste0(basename(path.dat.csv), "\n"))
+
   # define allowable cols
   allowable_cols <- c("date", "depth", "depth_lower", "depth_upper", "variable", "variance", "replicates", "plt_name")
 
