@@ -4,10 +4,10 @@
 \alias{get_CSV_nms}
 \title{Get csv names}
 \usage{
-get_CSV_nms(path.csv)
+get_CSV_nms(path)
 }
 \arguments{
-\item{path.csv}{path to csv file}
+\item{path}{path to CSV or GZ file}
 }
 \value{
 names of csv file columns

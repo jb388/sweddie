@@ -20,10 +20,10 @@ dd_helper <- function(expName, dataName, DATA_DIR = NULL, DD_DIR = NULL, write_o
     system.file("extdata", "templates", "meta", "datTemplate_dd.csv", package = "sweddie"),
     stringsAsFactors = FALSE,
     check.names = FALSE)
-  data <- read.csv(
+  data <- read_csv_cmp(
     file.path(DATA_DIR, paste0(dataName, ".csv")),
     nrows = 1,
-    check.names = FALSE) # this prevents replacement of characters to be R friendly
+    check.names = FALSE)
   template[1:ncol(data), 1] <- names(data)
   if (write_out) {
     write.csv(x = template,

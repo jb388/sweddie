@@ -43,7 +43,7 @@ flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName
   }
 
   # get data
-  data <- read.csv(file.path(DATA_DIR, paste0(dataFileName, ".csv")))
+  data <- read_csv_cmp(file.path(DATA_DIR, paste0(dataFileName, ".csv")))
 
   # get metadata
   sweddie_meta <- compile_meta(verbose = FALSE)

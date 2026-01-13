@@ -9,7 +9,7 @@
 #' @param ... used internally for optional arguments passed to function
 #' @details interactive function for harmonizing raw data which outputs dat files and their dd files, and optionally updates FLMD
 #' @importFrom stats na.omit
-#' @importFrom utils menu read.csv write.csv
+#' @importFrom utils menu write.csv
 #' @importFrom lubridate ymd_hms
 #' @export
 ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, append.flmd, compress = TRUE, ...) {
@@ -20,8 +20,8 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   allowable_cols <- c("date", "depth", "depth_lower", "depth_upper", "variable", "variance", "replicates", "plt_name")
 
   # read raw data files
-  dat <- read.csv(path.dat.csv, strip.white = TRUE, check.names = FALSE, as.is = TRUE)
-  dd <- read.csv(path.dd.csv, strip.white = TRUE, check.names = FALSE, as.is = TRUE)
+  dat <- read_csv_cmp(path.dat.csv, strip.white = TRUE, check.names = FALSE, as.is = TRUE)
+  dd <- read_csv_cmp(path.dd.csv, strip.white = TRUE, check.names = FALSE, as.is = TRUE)
 
   # get metadata
   sweddie_meta <- compile_meta(verbose = FALSE)
