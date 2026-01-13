@@ -10,6 +10,7 @@ ingestDat(
   path.dat.csv,
   path.dd.csv,
   append.flmd,
+  compress = TRUE,
   ...
 )
 }
@@ -23,6 +24,8 @@ ingestDat(
 \item{path.dd.csv}{path to data dictionary file of raw data}
 
 \item{append.flmd}{should new rows be added to existing FLMD file?}
+
+\item{compress}{should data files be compressed (TRUE by default)}
 
 \item{...}{used internally for optional arguments passed to function}
 }

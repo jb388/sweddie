@@ -4,13 +4,7 @@
 \alias{dd_helper}
 \title{Helper for creating data dictionary files}
 \usage{
-dd_helper(
-  expName,
-  dataName,
-  DATA_DIR = NULL,
-  META_DIR = NULL,
-  write_out = TRUE
-)
+dd_helper(expName, dataName, DATA_DIR = NULL, DD_DIR = NULL, write_out = TRUE)
 }
 \arguments{
 \item{expName}{name of experiment}
@@ -19,7 +13,7 @@ dd_helper(
 
 \item{DATA_DIR}{directory to search for .csv file matching supplied dataName}
 
-\item{META_DIR}{directory to search for .csv file of matching data dictionary file}
+\item{DD_DIR}{directory to search for .csv file of matching data dictionary file}
 
 \item{write_out}{should function write the template file to disk?}
 }

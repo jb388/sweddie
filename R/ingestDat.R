@@ -5,13 +5,14 @@
 #' @param path.dat.csv path to raw data file
 #' @param path.dd.csv path to data dictionary file of raw data
 #' @param append.flmd should new rows be added to existing FLMD file?
+#' @param compress should data files be compressed (TRUE by default)
 #' @param ... used internally for optional arguments passed to function
 #' @details interactive function for harmonizing raw data which outputs dat files and their dd files, and optionally updates FLMD
 #' @importFrom stats na.omit
 #' @importFrom utils menu read.csv write.csv
 #' @importFrom lubridate ymd_hms
 #' @export
-ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, append.flmd, ...) {
+ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, append.flmd, compress = TRUE, ...) {
 
   cat(paste0(basename(path.dat.csv), "\n\n"))
 
@@ -196,40 +197,52 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     if (exists("vcl.dat.nms")) {
       var.i <- match(names(vcl.dat.nms)[match(dat.nms[i], unlist(vcl.dat.nms))], names(dat))
       ix <- c(ix, var.i)
-    } q
+    }
     dat[ , na.omit(ix)]
   }), nm = dat.nms)
   for (i in seq_along(dat.ls)) {
+
     vn_abr <- sub(
       "^(?:([A-Za-z])\\w*\\s+([A-Za-z])|([A-Za-z]{2})).*",
       "\\1\\2\\3",
       names(dat.ls)[i],
       perl = TRUE
     )
+
     nm <- paste0("swdy_", vn_abr, "_", basename(path.dat.csv))
-    if (any(grepl(nm, list.files(file.path(DATA_DIR))))) {
-      nm <- paste0(readline(prompt = paste0("Duplicate file name detected. Please supply an alternative name for the ", names(dat.ls[i]), " data file", "\n")), ".csv")
+    out_csv <- file.path(DATA_DIR, nm)
+
+    # check for duplicates (.csv or .csv.gz)
+    if (any(startsWith(list.files(DATA_DIR), nm))) {
+      nm <- paste0(
+        readline(
+          prompt = paste0(
+            "Duplicate file name detected. Please supply an alternative name for the ",
+            names(dat.ls)[i], " data file\n"
+          )
+        ),
+        ".csv"
+      )
+      out_csv <- file.path(DATA_DIR, nm)
     }
+
     names(dat.ls)[i] <- nm
-    write.csv(
-      dat.ls[[i]],
-      file = file.path(DATA_DIR, nm),
-      row.names = FALSE
-    )
+
+    if (compress) {
+      con <- gzfile(paste0(out_csv, ".gz"), open = "wt")
+      write.csv(dat.ls[[i]], con, row.names = FALSE)
+      close(con)
+    } else {
+      write.csv(dat.ls[[i]], out_csv, row.names = FALSE)
+    }
   }
 
   # create dd files
-  dd.ls <- setNames(lapply(seq_along(dat.ls), function(i) {
+  dd.ls <- lapply(seq_along(dat.ls), function(i) {
     dd[match(names(dat.ls[[i]]), dd$colName), ]
-  }), nm = paste0(names(dat.ls), "_dd"))
+  })
   for (i in seq_along(dd.ls)) {
-    vn_abr <- sub(
-      "^(?:([A-Za-z])\\w*\\s+([A-Za-z])|([A-Za-z]{2})).*",
-      "\\1\\2\\3",
-      names(dat.ls)[i],
-      perl = TRUE
-    )
-    nm <- paste0("swdy_", vn_abr, "_", basename(path.dd.csv))
+    nm <- sub("\\.csv$", "_dd.csv", names(dat.ls)[i])
     if (any(grepl(nm, list.files(file.path(DD_DIR))))) {
       nm <- paste0(readline(prompt = paste0("Duplicate file name detected. Please supply an alternative name for the ", names(dat.ls[i]), " dd file", "\n")), ".csv")
     }
