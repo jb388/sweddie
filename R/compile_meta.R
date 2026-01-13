@@ -58,58 +58,55 @@ compile_meta <- function(DIR = "~/sweddie_db",
 
     vcat("\n\nCompiling metadata files in", exp.dir, "\n", rep("-", 30), "\n")
 
-    # Check input and meta directories
-    dat.dir <- file.path(exp.dir, "dat/data")
-    if (!dir.exists(dat.dir)) {
-      vcat("Input data directory does not exist:", dat.dir, "\n")
-      return(NULL)
-    }
-    dat.dir.ls <- list.files(dat.dir, full.names = TRUE)
-
-    mta.dir <- file.path(exp.dir, "dat/meta")
-    if (!dir.exists(mta.dir)) {
-      vcat("Metadata directory does not exist:", mta.dir, "\n")
-      return(NULL)
-    }
-    mta.dir.ls <- list.files(mta.dir, full.names = TRUE)
+    # Get file paths
+    exp.dir.ls <- list.files(exp.dir, recursive = TRUE, full.names = TRUE)
 
     # FLMD and DD files
-    flmd.ls <- mta.dir.ls[grepl("_flmd.csv", mta.dir.ls)]
-    dd.ls   <- mta.dir.ls[grepl("_dd.csv", mta.dir.ls)]
+    flmd.ls <- exp.dir.ls[grepl("flmd", exp.dir.ls)]
+    dat.ls <- list.files(file.path(exp.dir, "data"), full.names = TRUE)
+    dd.ls   <- list.files(file.path(exp.dir, "dd"), full.names = TRUE)
 
     # ensure EOL carriage return present
-    if (EOL_err) invisible(cr_add(mta.dir))
+    if (EOL_err) invisible(cr_add(exp.dir))
 
-    if (length(flmd.ls) == 0 && length(dd.ls) == 0) {
-      vcat("No FLMD or DD files found for experiment:", expName, "\n")
+    if (length(dd.ls) == 0) {
+      vcat("No DD files found for experiment:", expName, "\n")
       return(NULL)
     }
 
-    # Non-standard files
-    ix <- which(!(basename(mta.dir.ls) %in% c(basename(flmd.ls), basename(dd.ls))))
-    if (length(ix) > 0) {
-      vcat("\tMeta directory contains non-standard files that will be ignored:\n",
-           basename(mta.dir.ls)[ix], "\n")
+    if (length(flmd.ls) == 0) {
+      vcat("No FLMD files found for experiment:", expName, "\n")
+      return(NULL)
     }
 
-    # Match input data with DD files
-    dat.ls <- dat.dir.ls[basename(dat.dir.ls) %in% basename(gsub("_dd", "", dd.ls))]
-    ix <- which(is.na(match(basename(gsub("_dd", "", dd.ls)), basename(dat.dir.ls))))
-    if (length(ix) > 0) {
-      vcat("\tThe following data dictionary files are missing input data and will not be ingested:\n",
-           basename(dd.ls)[ix], "\n")
-      dd.ls <- dd.ls[-ix]
+    if (length(flmd.ls) > 1) {
+      vcat("\nExperiment directory contains multiple FLMD files but only one is allowed:\n",
+           basename(flmd.ls), "\n")
+      return(NULL)
     }
-    ix <- which(is.na(match(basename(dat.dir.ls), basename(gsub("_dd", "", dd.ls)))))
-    if (length(ix) > 0) {
+
+    # Match data and dd files
+    dat_names <- basename(dat.ls)
+    dd_names <- basename(gsub("_dd", "", dd.ls))
+
+    missing_dd <- setdiff(dat_names, dd_names)
+    dat.clean.ls <- dat.ls[!(dat_names %in% missing_dd)]
+    extra_dd <- setdiff(dd_names, dat_names)
+    dd.clean.ls <- dd.ls[!(dd_names %in% extra_dd)]
+
+    if (length(missing_dd) > 0) {
       vcat("\tThe following input data files are missing data dictionaries and will not be ingested:\n",
-           basename(dat.dir.ls)[ix], "\n")
-      dat.dir.ls <- dat.dir.ls[-ix]
+           paste(missing_dd, collapse = ", "), "\n")
+    }
+
+    if (length(extra_dd) > 0) {
+      vcat("\tThe following data dictionary files are missing input data and will not be ingested:\n",
+           paste(extra_dd, collapse = ", "), "\n")
     }
 
     # If no files remain after filtering
-    if (length(dd.ls) == 0 && length(flmd.ls) == 0) {
-      vcat("No valid metadata files remain after filtering for experiment:", expName, "\n")
+    if (length(dd.clean.ls) == 0) {
+      vcat("No valid DD files remain after filtering for experiment:", expName, "\n")
       return(NULL)
     }
 
@@ -132,7 +129,7 @@ compile_meta <- function(DIR = "~/sweddie_db",
     }
 
     # Check columns
-    dat.ls.colNms <- lapply(setNames(dat.dir.ls, basename(dat.dir.ls)), get_CSV_nms)
+    dat.ls.colNms <- lapply(setNames(dat.ls, basename(dat.ls)), get_CSV_nms)
     for (i in seq_along(dat.ls.colNms)) {
       miss <- dat.ls.colNms[[i]][!(dat.ls.colNms[[i]] %in% dd[[i]][["colName"]])]
       if (length(miss) > 0) {

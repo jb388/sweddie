@@ -9,12 +9,12 @@
 #' @details this function creates a data dictionary template file for the supplied input data
 #' @importFrom utils read.csv write.csv
 #' @export
-dd_helper <- function(expName, dataName, DATA_DIR = NULL, META_DIR = NULL, write_out = TRUE) {
+dd_helper <- function(expName, dataName, DATA_DIR = NULL, DD_DIR = NULL, write_out = TRUE) {
   if (is.null(DATA_DIR)) {
-    DATA_DIR <- file.path("~/sweddie_db/sweddie", expName, "dat", "data")
+    DATA_DIR <- file.path("~/sweddie_db/sweddie", expName, "data")
   }
   if (is.null(META_DIR)) {
-    META_DIR <- file.path("~/sweddie_db/sweddie", expName, "dat", "meta")
+    DD_DIR <- file.path("~/sweddie_db/sweddie", expName, "dd")
   }
   template <- read.csv(
     system.file("extdata", "templates", "meta", "datTemplate_dd.csv", package = "sweddie"),
@@ -27,7 +27,7 @@ dd_helper <- function(expName, dataName, DATA_DIR = NULL, META_DIR = NULL, write
   template[1:ncol(data), 1] <- names(data)
   if (write_out) {
     write.csv(x = template,
-              file = file.path(META_DIR, paste0(dataName, "_dd.csv")),
+              file = file.path(DD_DIR, paste0(dataName, "_dd.csv")),
               row.names = FALSE)
   } else {
     template

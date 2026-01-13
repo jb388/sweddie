@@ -17,14 +17,15 @@ flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName
   # list optionals
   optArgs <- list(...)
 
-  # set data directory path
-  DATA_DIR <- file.path(DIR, "sweddie", expName, "dat", "data")
-  META_DIR <- file.path(DIR, "sweddie", expName, "dat", "meta")
+  # set paths
+  EXP_DIR <- file.path(DIR, "sweddie", expName)
+  DATA_DIR <- file.path(EXP_DIR, "data")
+  DD_DIR <- file.path(EXP_DIR, "meta")
 
   # get flmd template
   if (append) {
     files <- list.files(
-      META_DIR,
+      DD_DIR,
       full.names = TRUE)
     flmd.s <- files[grepl("flmd", files)]
     if (length(flmd.s) == 0) {
@@ -38,7 +39,7 @@ flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName
   } else {
     # get template
     flmd <- read.csv(system.file("extdata", "templates", "meta", "flmd_SWEDDIE.csv", package = "sweddie"))
-    flmdName <- file.path(META_DIR, paste0(expName, "_", "flmd.csv"))
+    flmdName <- file.path(DD_DIR, paste0(expName, "_", "flmd.csv"))
   }
 
   # get data
@@ -151,7 +152,7 @@ flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName
   if (write_out) {
     if (rename) {
       write.csv(flmd,
-                file = file.path(META_DIR, paste0(expName, "_flmd.csv")),
+                file = file.path(DIR, paste0(expName, "_flmd.csv")),
                 row.names = FALSE)
     } else {
       write.csv(flmd, file = flmdName, row.names = FALSE)

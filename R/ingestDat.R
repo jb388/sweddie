@@ -174,7 +174,6 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
         }
       }
       cat("\nPlease ensure column 'plt_name' is present in data and data dictionary files\n")
-      return(NULL)
     } else {
       ix.plt <- NULL
     }
@@ -186,9 +185,9 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     cat("\nThe following plt_name values do not match entries in the plot: ", unlist(unique(dat[ix.plt]), use.names = FALSE)[which(!plt.nms)], "\nAllowable values: ", sweddie_core[[expName]]$plot$plt_name)
   }
 
-  # define data and metadata directories
-  DATA_DIR <- file.path(DIR, "sweddie", expName, "dat", "data")
-  META_DIR <- file.path(DIR, "sweddie", expName, "dat", "meta")
+  # define data and dd directories
+  DATA_DIR <- file.path(DIR, "sweddie", expName, "data")
+  DD_DIR <- file.path(DIR, "sweddie", expName, "dd")
 
   # create data files
   dat.ls <- setNames(lapply(seq_along(dat.nms), function(i) {
@@ -197,7 +196,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     if (exists("vcl.dat.nms")) {
       var.i <- match(names(vcl.dat.nms)[match(dat.nms[i], unlist(vcl.dat.nms))], names(dat))
       ix <- c(ix, var.i)
-    }
+    } q
     dat[ , na.omit(ix)]
   }), nm = dat.nms)
   for (i in seq_along(dat.ls)) {
@@ -231,12 +230,12 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
       perl = TRUE
     )
     nm <- paste0("swdy_", vn_abr, "_", basename(path.dd.csv))
-    if (any(grepl(nm, list.files(file.path(META_DIR))))) {
+    if (any(grepl(nm, list.files(file.path(DD_DIR))))) {
       nm <- paste0(readline(prompt = paste0("Duplicate file name detected. Please supply an alternative name for the ", names(dat.ls[i]), " dd file", "\n")), ".csv")
     }
     write.csv(
       dd.ls[[i]],
-      file = file.path(META_DIR, nm),
+      file = file.path(DD_DIR, nm),
       row.names = FALSE
     )
   }

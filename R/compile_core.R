@@ -56,6 +56,7 @@ compile_core <- function (DIR = "~/sweddie_db", write_report = FALSE, verbose = 
     # get tables
     tbls <- list.files(data_dirs[d], full.names = TRUE)
     core_tbls <- tbls[grepl(".csv", tbls)]
+    core_tbls <- core_tbls[!grepl("flmd", core_tbls)]
 
     # read files
     datIn <- lapply(
