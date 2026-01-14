@@ -48,7 +48,7 @@ compile_all <- function(
       nm <- sub(pattern, "", basename(entry), ignore.case = TRUE)
 
       if (verbose) {
-        message("  └─ reading file: ", basename(entry))
+        message("  -- reading file: ", basename(entry))
       }
 
       out[[nm]] <- read_fun(entry, ...)
