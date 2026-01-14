@@ -1,6 +1,6 @@
 #' Compile all SWEDDIE data
 #'
-#' @param DIR local directory for SWEDDIE data files (default: "~/sweddie_db/sweddie)
+#' @param DIR local directory for SWEDDIE files
 #' @param pattern regex pattern for files to read (defaults to CSV and GZ)
 #' @param read_fun function to call for reading files (defaults to
 #' 'sweddie::read_csv_comp')
@@ -15,21 +15,22 @@
 #' database as it will be very slow. Observational data are best retrieved with
 #' filtering queries.
 compile_all <- function(
-    DIR = "~/sweddie_db/sweddie",
+    DIR = "~/sweddie_db",
     pattern = "\\.csv(\\.gz)?$",
     read_fun = read_csv_cmp,
     verbose = TRUE,
     ...
 ) {
 
-  stopifnot(dir.exists(DIR))
+  DB_DIR <- file.path(DIR, "sweddie")
+  stopifnot(dir.exists(DB_DIR))
 
   if (verbose) {
-    message("Reading directory: ", file.path(DIR))
+    message("Reading directory: ", file.path(DB_DIR))
   }
 
   out <- list()
-  entries <- list.files(DIR, full.names = TRUE)
+  entries <- list.files(DB_DIR, full.names = TRUE)
 
   for (entry in entries) {
 

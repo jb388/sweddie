@@ -5,7 +5,7 @@
 \title{Compile all SWEDDIE data}
 \usage{
 compile_all(
-  DIR = "~/sweddie_db/sweddie",
+  DIR = "~/sweddie_db",
   pattern = "\\\\.csv(\\\\.gz)?$",
   read_fun = read_csv_cmp,
   verbose = TRUE,
@@ -13,7 +13,7 @@ compile_all(
 )
 }
 \arguments{
-\item{DIR}{local directory for SWEDDIE data files (default: "~/sweddie_db/sweddie)}
+\item{DIR}{local directory for SWEDDIE files}
 
 \item{pattern}{regex pattern for files to read (defaults to CSV and GZ)}
 
