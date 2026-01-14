@@ -146,13 +146,7 @@ flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName
   }
 
   if (write_out) {
-    if (rename) {
-      write.csv(flmd,
-                file = flmdName,
-                row.names = FALSE)
-    } else {
-      write.csv(flmd, file = flmdName, row.names = FALSE)
-    }
+    write.csv(flmd, file = flmdName, row.names = FALSE)
   } else {
     flmd
   }

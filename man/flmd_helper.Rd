@@ -9,7 +9,6 @@ flmd_helper(
   expName,
   dataFileName,
   dateColName,
-  rename = FALSE,
   append = TRUE,
   write_out = TRUE,
   orders = NULL,
@@ -24,8 +23,6 @@ flmd_helper(
 \item{dataFileName}{name of input file (must be *.csv file, do not include extension)}
 
 \item{dateColName}{supply known text string for column in input data containing dates}
-
-\item{rename}{should file name be overwritten, e.g., 'expName_flmd'?}
 
 \item{append}{should new rows be added to existing FLMD file?}
 
