@@ -4,7 +4,6 @@
 #' @param expName name of experiment
 #' @param dataFileName name of input file (must be *.csv file, do not include extension)
 #' @param dateColName supply known text string for column in input data containing dates
-#' @param rename should file name be overwritten, e.g., 'expName_flmd'?
 #' @param append should new rows be added to existing FLMD file?
 #' @param write_out should function write out a FLMD file in *.csv format?
 #' @param orders optionally supply date format, e.g., %m-%d-%Y
@@ -12,7 +11,7 @@
 #' @details interactive function for filling out or updating file level metadata (FLMD)
 #' @importFrom utils menu read.csv write.csv
 #' @export
-flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName, rename = FALSE, append = TRUE, write_out = TRUE, orders = NULL, ...) {
+flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName, append = TRUE, write_out = TRUE, orders = NULL, ...) {
 
   # list optionals
   optArgs <- list(...)
@@ -20,14 +19,11 @@ flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName
   # set paths
   EXP_DIR <- file.path(DIR, "sweddie", expName)
   DATA_DIR <- file.path(EXP_DIR, "data")
-  DD_DIR <- file.path(EXP_DIR, "meta")
+  FLMD_DIR <- file.path(EXP_DIR, "flmd")
 
   # get flmd template
   if (append) {
-    files <- list.files(
-      DD_DIR,
-      full.names = TRUE)
-    flmd.s <- files[grepl("flmd", files)]
+    flmd.s <- list.files(FLMD_DIR)
     if (length(flmd.s) == 0) {
       stop ("cannot append record: no flmd files found")
     }
@@ -39,7 +35,7 @@ flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName
   } else {
     # get template
     flmd <- read.csv(system.file("extdata", "templates", "meta", "flmd_SWEDDIE.csv", package = "sweddie"))
-    flmdName <- file.path(DD_DIR, paste0(expName, "_", "flmd.csv"))
+    flmdName <- file.path(FLMD_DIR, "flmd.csv")
   }
 
   # get data
@@ -152,7 +148,7 @@ flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName
   if (write_out) {
     if (rename) {
       write.csv(flmd,
-                file = file.path(DIR, paste0(expName, "_flmd.csv")),
+                file = flmdName,
                 row.names = FALSE)
     } else {
       write.csv(flmd, file = flmdName, row.names = FALSE)

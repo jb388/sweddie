@@ -1,6 +1,6 @@
 Package: sweddie
 Title: The Soil Warming Experiment to Depth Data Integration Effort (SWEDDIE)
-Version: 0.0.0.9000
+Version: 1.1.0
 Authors@R:
     person("Jeffrey", "Beem-Miller", , "jbeemmil@gmail.com", role = c("aut", "cre"))
 Description: Tools for ingesting, harmonizing, compiling, and exploring the SWEDDIE database.
