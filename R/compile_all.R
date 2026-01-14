@@ -4,6 +4,7 @@
 #' @param pattern regex pattern for files to read (defaults to CSV and GZ)
 #' @param read_fun function to call for reading files (defaults to
 #' 'sweddie::read_csv_comp')
+#' @param verbose should function progress be passed to console?
 #' @param ... optional arguments to pass to read_fun
 #' @return list
 #' @export
@@ -17,35 +18,42 @@ compile_all <- function(
     DIR = "~/sweddie_db/sweddie",
     pattern = "\\.csv(\\.gz)?$",
     read_fun = read_csv_cmp,
+    verbose = TRUE,
     ...
-    ) {
+) {
 
   stopifnot(dir.exists(DIR))
 
-  out <- list()
+  if (verbose) {
+    message("Reading directory: ", file.path(DIR))
+  }
 
-  # List files and directories separately
+  out <- list()
   entries <- list.files(DIR, full.names = TRUE)
 
   for (entry in entries) {
 
     if (dir.exists(entry)) {
-      # Recurse into subdirectory
+
       out[[basename(entry)]] <- compile_all(
         entry,
         pattern = pattern,
         read_fun = read_fun,
+        verbose = verbose,
         ...
       )
 
     } else if (grepl(pattern, entry, ignore.case = TRUE)) {
-      # Read CSV file
+
       nm <- sub(pattern, "", basename(entry), ignore.case = TRUE)
+
+      if (verbose) {
+        message("  └─ reading file: ", basename(entry))
+      }
 
       out[[nm]] <- read_fun(entry, ...)
     }
   }
 
-  # Drop empty directories
   out[lengths(out) > 0]
 }

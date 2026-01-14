@@ -8,6 +8,7 @@ compile_all(
   DIR = "~/sweddie_db/sweddie",
   pattern = "\\\\.csv(\\\\.gz)?$",
   read_fun = read_csv_cmp,
+  verbose = TRUE,
   ...
 )
 }
@@ -18,6 +19,8 @@ compile_all(
 
 \item{read_fun}{function to call for reading files (defaults to
 'sweddie::read_csv_comp')}
+
+\item{verbose}{should function progress be passed to console?}
 
 \item{...}{optional arguments to pass to read_fun}
 }
