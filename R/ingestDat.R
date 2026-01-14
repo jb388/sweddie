@@ -24,7 +24,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   dd <- read_csv_cmp(path.dd.csv, strip.white = TRUE, check.names = FALSE, as.is = TRUE)
 
   # get metadata
-  sweddie_meta <- compile_meta(verbose = FALSE)
+  sweddie_meta <- compile_meta(verbose = FALSE, EOL_err = TRUE)
 
   # check data orientation
   hzn.vrt <- menu(
@@ -150,7 +150,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   }
 
   # get core data
-  sweddie_core <- compile_core(verbose = FALSE, write_report = FALSE)
+  sweddie_core <- compile_core(verbose = FALSE, write_report = FALSE, EOL_err = TRUE)
 
   # get plt_name column
   ix.plt <- which(names(dat) == "plt_name")
@@ -256,6 +256,12 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
 
   # update flmd
   if (append.flmd) {
+    if (length(ix.tim) != 1) {
+      stop(
+        "Could not uniquely identify date column for file ",
+        names(dat.ls)[i]
+      )
+    }
     lapply(seq_along(dat.ls), function(i) {
       flmd_helper(
         expName = expName,
