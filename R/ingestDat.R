@@ -30,9 +30,10 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   hzn.vrt <- menu(
     c("horizontal", "vertical"),
     title = paste0("How are data oriented? i.e., are data oriented in rows (horizontal), e.g., ID column/s with subsequent measurement columns, or in columns (vertical), e.g., each column represents data from a different sensor, different depths, or plot?"))
-  # if (hzn.vrt == "vertical") {
-  #
-  # }
+  if (hzn.vrt == "vertical") {
+    message("Unfortunately this function does not accept vertically oriented data. Please reorient and try again.\n")
+    return(NULL)
+  }
 
   # function to get and validate indices
   get_valid_indices <- function(df, colType) {
@@ -174,8 +175,8 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
           }
         }
       }
-      cat("\nPlease ensure column 'plt_name' is present in data and data dictionary files\n")
     } else {
+      cat("\nPlease ensure column 'plt_name' is present in data and data dictionary files\n")
       ix.plt <- NULL
     }
   }

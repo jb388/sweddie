@@ -23,7 +23,7 @@ flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName
 
   # get flmd template
   if (append) {
-    flmd.s <- list.files(FLMD_DIR)
+    flmd.s <- list.files(FLMD_DIR, full.names = TRUE)
     if (length(flmd.s) == 0) {
       stop ("cannot append record: no flmd files found")
     }
