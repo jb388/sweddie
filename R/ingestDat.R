@@ -101,6 +101,8 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
       warning(paste0("A maximum of one site ID column is allowed.\n"))
       return(NULL)
     }
+  } else {
+    ix.sit <- NULL
   }
 
   ## depth
