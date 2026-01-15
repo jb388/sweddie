@@ -21,7 +21,7 @@ dd_helper <- function(expName, dataName, DATA_DIR = NULL, DD_DIR = NULL, write_o
     stringsAsFactors = FALSE,
     check.names = FALSE)
   data <- read_csv_cmp(
-    file.path(DATA_DIR, paste0(dataName, ".csv")),
+    file.path(DATA_DIR, dataName),
     nrows = 1,
     check.names = FALSE)
   template[1:ncol(data), 1] <- names(data)

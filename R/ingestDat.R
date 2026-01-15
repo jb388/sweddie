@@ -14,10 +14,19 @@
 #' @export
 ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, append.flmd, compress = TRUE, ...) {
 
-  cat(paste0(basename(path.dat.csv), "\n\n"))
+  cat(expName, paste0("\n", basename(path.dat.csv), "\n\n"))
 
-  # define allowable cols
-  allowable_cols <- c("date", "depth", "depth_lower", "depth_upper", "variable", "variance", "replicates", "plt_name")
+  # define canonical names
+  canonical_vars <- list(
+    ix.sit = "sit_name",
+    ix.plt = "plt_name",
+    ix.rid = "rep_name",
+    ix.dpt = "depth",
+    ix.tim = "date",
+    ix.dat = "data",
+    ix.rep = "rep_num",
+    ix.var = "variance"
+  )
 
   # read raw data files
   dat <- read_csv_cmp(path.dat.csv, strip.white = TRUE, check.names = FALSE, as.is = TRUE)
@@ -81,13 +90,16 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   ix.dat <- get_valid_indices(dat, "data")
   dat.nms.in <- names(dat)[ix.dat]
   dat.nms <- vector(mode = "list", length = length(dat.nms.in))
-  for (i in seq_along(dat.nms)) {
-    varName_opts <- unique(unlist(lapply(lapply(sweddie_meta, "[[", "flmd"), function(x) lapply(x, "[[", "varName"))))
-    sel <- menu(varName_opts, title = paste0("Does the data in column '", dat.nms.in[i], "' match one of the following variable names? (Enter '0' if none are appropriate)"))
-    if (sel != 0) {
-      dat.nms[i] <- varName_opts[sel]
-    } else {
-      dat.nms[i] <- readline(prompt = paste0("Please describe the variable in data column: ", dat.nms.in[i], "\n"))
+
+  # site
+  sit_sam <- menu(
+    c("yes", "no"),
+    title = paste0("Do all data in this file originate from the same site?"))
+  if (sit_sam == 2) {
+    ix.sit <- get_valid_indices(dat, "site ID")
+    if (length(ix.sit) > 1) {
+      warning(paste0("A maximum of one site ID column is allowed.\n"))
+      return(NULL)
     }
   }
 
@@ -122,11 +134,12 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   # check for summarized data (means/var)
   ix <- menu(
     c("yes", "no"),
-    title = paste0("Do any columns contain replicates or variance estimates (standard deviation, coefficient of variation, standard error, confidence interval)?"))
+    title = paste0("Do any columns contain variance estimates (standard deviation, coefficient of variation, standard error, confidence interval) or the number of replicates?"))
   if (ix == 1) {
     ix.rep <- get_valid_indices(dat, "replicates")
     if (length(ix.rep) > 1) {
-      cat("\nOnly one replicate column is permitted\n")
+      warning("\nOnly one replicate number column is permitted\n")
+      return(NULL)
     }
     ix.var <- get_valid_indices(dat, "variance")
     vcl.nms <- names(dat)[ix.var]
@@ -138,15 +151,46 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
         title = cat("\nWhich data column corresponds to variance column '", vcl.nms[i], "'?"))
       vcl.dat.nms[[i]] <- dat.nms[ix]
     }
+  } else {
+    ix.rep <- NULL
+  }
+
+  # check for replicate IDs
+  ix <- menu(
+    c("yes", "no"),
+    title = paste0("Do any columns contain replicate IDs?"))
+  if (ix == 1) {
+    ix.rid <- get_valid_indices(dat, "replicate ID")
+    if (length(ix.rid) > 1) {
+      warning("\nOnly one replicate ID column is permitted\n")
+      return(NULL)
+    }
+  } else {
+    ix.rid <- NULL
   }
 
   # get date/time col
   ix.tim <- which(names(dat) == dd$colName[which(dd$dataType == "date")])
   if (length(ix.tim) > 1) {
-    warning(paste0("Data dictionary (dd) file denotes more than one columns with dataType = 'date' \n but only one is allowed. Please update dd file\n"))
+    warning(paste0("Data dictionary (dd) file denotes more than one columns with dataType = 'date' \n but only one is allowed.\n"))
+    tim.sel <- menu(
+      names(dat)[ix.tim],
+      title = cat("\nWhich date column would you like to use? ")
+    )
+    ix.tim <- names(dat)[ix.tim[tim.sel]]
   }
   if (length(ix.tim) == 0) {
-    warning(paste0("No columns with dataType = 'date' found in dd file.\n Please update dd file\n"))
+    warning(paste0("No columns with dataType = 'date' found in dd file.\n"))
+    ix.tim <- get_valid_indices(dat, "date/timestamp")
+    new.tim <- TRUE
+    if (length(ix.tim) > 1) {
+      warning(paste0("Data dictionary (dd) file denotes more than one columns with dataType = 'date' \n but only one is allowed. Using ", ix.tim[1], ", please update dd file\n"))
+      ix.tim <- ix.tim[1]
+    }
+    if (length(ix.tim) == 0) {
+      warning(paste0("Data cannot be ingested as no date/timestamp column supplied.\n"))
+      return(NULL)
+    }
   }
 
   # get core data
@@ -193,13 +237,25 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
 
   # create data files
   dat.ls <- setNames(lapply(seq_along(dat.nms), function(i) {
+
     dat.i <- match(dat.nms.in[i], names(dat))
-    ix <- c(ix.tim, ix.plt, ix.dpt, dat.i)
+    if (is.na(dat.i)) {
+      stop("Internal error: cannot match data variable ", dat.nms.in[i])
+    }
+    ix.all <- c(ix.sit = ix.sit, ix.plt = ix.plt, ix.rid = ix.rid, ix.dpt = ix.dpt, ix.tim = ix.tim, ix.dat = dat.i, ix.rep = ix.rep)
     if (exists("vcl.dat.nms")) {
       var.i <- match(names(vcl.dat.nms)[match(dat.nms[i], unlist(vcl.dat.nms))], names(dat))
-      ix <- c(ix, var.i)
+      ix.all <- c(ix.all, ix.var = var.i)
     }
-    dat[ , na.omit(ix)]
+
+    # confirm valid indices
+    ix.all <- ix.all[!is.na(ix.all)]
+
+    # subset data and rename as needed
+    dat.sub <- dat[, ix.all, drop = FALSE]
+    names(dat.sub) <- canonical_vars[match(names(ix.all), names(canonical_vars))]
+
+    return(dat.sub)
   }), nm = dat.nms)
   for (i in seq_along(dat.ls)) {
 
@@ -240,7 +296,20 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
 
   # create dd files
   dd.ls <- lapply(seq_along(dat.ls), function(i) {
-    dd[match(names(dat.ls[[i]]), dd$colName), ]
+
+    dat_cols <- names(dat.ls[[i]])
+    original_cols <- sapply(dat_cols, function(cn) {
+      idx <- which(canonical_vars == cn)
+      if (length(idx) == 0) return(NA_character_)
+      get(names(canonical_vars)[idx])
+    })
+    dd_rows <- dd[original_cols, , drop = FALSE]
+    dd_rows$colName <- names(dat.ls[[i]])
+
+    if (is.na(dd_rows[dd_rows$colName == "date", "dataType"])) {
+      dd_rows[dd_rows$colName == "date", "dataType"] <- "date"
+    }
+    dd_rows
   })
   for (i in seq_along(dd.ls)) {
     nm <- sub("\\.csv$", "_dd.csv", names(dat.ls)[i])
@@ -256,12 +325,6 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
 
   # update flmd
   if (append.flmd) {
-    if (length(ix.tim) != 1) {
-      stop(
-        "Could not uniquely identify date column for file ",
-        names(dat.ls)[i]
-      )
-    }
     lapply(seq_along(dat.ls), function(i) {
       flmd_helper(
         expName = expName,
