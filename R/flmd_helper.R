@@ -51,7 +51,16 @@ flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName
     nm[["email"]] <- "jbeemmiller@lbl.gov"
   }
   if (is.null(nm[["fileName"]])) {
-    nm[["fileName"]] <- paste0(dataFileName, ".csv")
+
+    files_in_dir <- list.files(DATA_DIR, full.names = FALSE)
+    matched_file <- grep(paste0("^", dataFileName, "(\\.csv|\\.csv\\.gz)?$"), files_in_dir, value = TRUE)
+
+    while (length(matched_file) != 1) {
+      nm[["fileName"]] <- readline(prompt = "Please supply fileName value (including extension, no quotes) ")
+      matched_file <- grep(nm[["fileName"]], files_in_dir, value = TRUE)
+    }
+
+    nm[["fileName"]] <- matched_file
   }
   if (is.null(dateColName)) {
     dateColName <- names(data)[
