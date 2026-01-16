@@ -278,15 +278,16 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
       out_csv <- file.path(DATA_DIR, nm)
     }
 
-    names(dat.ls)[i] <- nm
-
     if (compress) {
       con <- gzfile(paste0(out_csv, ".gz"), open = "wt")
       write.csv(dat.ls[[i]], con, row.names = FALSE)
       close(con)
+      names(dat.ls)[i] <- basename(con)
     } else {
       write.csv(dat.ls[[i]], out_csv, row.names = FALSE)
+      names(dat.ls)[i] <- basename(out_csv)
     }
+
   }
 
   # create dd files
