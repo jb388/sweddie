@@ -258,17 +258,10 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     names(dat.sub) <- canonical_vars[match(names(ix.all), names(canonical_vars))]
 
     return(dat.sub)
-  }), nm = dat.nms)
+  }), nm = dat.nms[i])
   for (i in seq_along(dat.ls)) {
 
-    vn_abr <- sub(
-      "^(?:([A-Za-z])\\w*\\s+([A-Za-z])|([A-Za-z]{2})).*",
-      "\\1\\2\\3",
-      names(dat.ls)[i],
-      perl = TRUE
-    )
-
-    nm <- paste0("swdy_", vn_abr, "_", basename(path.dat.csv))
+    nm <- paste0(names(dat.ls)[i], basename(path.dat.csv))
     out_csv <- file.path(DATA_DIR, nm)
 
     # check for duplicates (.csv or .csv.gz)
