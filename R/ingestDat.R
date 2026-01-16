@@ -300,8 +300,11 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
       if (length(idx) == 0) return(NA_character_)
       get(names(canonical_vars)[idx])
     })
-    dd_rows <- dd[original_cols, , drop = FALSE]
-    dd_rows$colName <- names(dat.ls[[i]])
+    if (length(original_cols$data) > 1) {
+      original_cols$data <- original_cols$data[i]
+    }
+    dd_rows <- dd[unlist(original_cols, use.names = FALSE), , drop = FALSE]
+    dd_rows$colName <- dat_cols
 
     if (is.na(dd_rows[dd_rows$colName == "date", "dataType"])) {
       dd_rows[dd_rows$colName == "date", "dataType"] <- "date"
