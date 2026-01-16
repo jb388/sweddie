@@ -89,7 +89,6 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   ## data col/s
   ix.dat <- get_valid_indices(dat, "data")
   dat.nms.in <- names(dat)[ix.dat]
-  dat.nms <- vector(mode = "list", length = length(dat.nms.in))
 
   # site
   sit_sam <- menu(
@@ -149,9 +148,9 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     dat.nms <- names(dat[ix.dat[which(!(ix.dat %in% ix.var))]])
     for (i in seq_along(vcl.nms)) {
       ix <- menu(
-        dat.nms,
+        dat.nms.in,
         title = cat("\nWhich data column corresponds to variance column '", vcl.nms[i], "'?"))
-      vcl.dat.nms[[i]] <- dat.nms[ix]
+      vcl.dat.nms[[i]] <- dat.nms.in[ix]
     }
   } else {
     ix.rep <- NULL
@@ -238,7 +237,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   DD_DIR <- file.path(DIR, "sweddie", expName, "dd")
 
   # create data files
-  dat.ls <- setNames(lapply(seq_along(dat.nms), function(i) {
+  dat.ls <- setNames(lapply(seq_along(dat.nms.in), function(i) {
 
     dat.i <- match(dat.nms.in[i], names(dat))
     if (is.na(dat.i)) {
@@ -246,7 +245,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     }
     ix.all <- c(ix.sit = ix.sit, ix.plt = ix.plt, ix.rid = ix.rid, ix.dpt = ix.dpt, ix.tim = ix.tim, ix.dat = dat.i, ix.rep = ix.rep)
     if (exists("vcl.dat.nms")) {
-      var.i <- match(names(vcl.dat.nms)[match(dat.nms[i], unlist(vcl.dat.nms))], names(dat))
+      var.i <- match(names(vcl.dat.nms)[match(dat.nms.in[i], unlist(vcl.dat.nms))], names(dat))
       ix.all <- c(ix.all, ix.var = var.i)
     }
 
@@ -258,7 +257,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     names(dat.sub) <- canonical_vars[match(names(ix.all), names(canonical_vars))]
 
     return(dat.sub)
-  }), nm = dat.nms)
+  }), nm = dat.nms.in)
   for (i in seq_along(dat.ls)) {
 
     nm <- paste0(names(dat.ls)[i], basename(path.dat.csv))
