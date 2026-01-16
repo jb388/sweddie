@@ -258,7 +258,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     names(dat.sub) <- canonical_vars[match(names(ix.all), names(canonical_vars))]
 
     return(dat.sub)
-  }), nm = dat.nms[i])
+  }), nm = dat.nms)
   for (i in seq_along(dat.ls)) {
 
     nm <- paste0(names(dat.ls)[i], basename(path.dat.csv))
