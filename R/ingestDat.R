@@ -260,7 +260,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   }), nm = dat.nms.in)
   for (i in seq_along(dat.ls)) {
 
-    nm <- paste0(names(dat.ls)[i], basename(path.dat.csv))
+    nm <- paste(names(dat.ls)[i], sub("\\.csv(\\.gz)?$", "", basename(path.dat.csv)), sep = "_")
     out_csv <- file.path(DATA_DIR, nm)
 
     # check for duplicates (.csv or .csv.gz)
@@ -278,11 +278,13 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     }
 
     if (compress) {
-      con <- gzfile(paste0(out_csv, ".gz"), open = "wt")
+      gz_path <- paste0(out_csv, ".csv.gz")
+      con <- gzfile(gz_path, open = "wt")
       write.csv(dat.ls[[i]], con, row.names = FALSE)
       close(con)
-      names(dat.ls)[i] <- basename(con)
+      names(dat.ls)[i] <- basename(gz_path)
     } else {
+      csv_path <- paste0(out_csv, ".csv")
       write.csv(dat.ls[[i]], out_csv, row.names = FALSE)
       names(dat.ls)[i] <- basename(out_csv)
     }
