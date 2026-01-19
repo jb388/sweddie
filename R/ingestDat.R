@@ -14,7 +14,7 @@
 #' @export
 ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, append.flmd, compress = TRUE, ...) {
 
-  cat(expName, paste0("\n", basename(path.dat.csv), "\n\n"))
+  message(paste0("Experiment name: ", expName, "\n", "File name: ", basename(path.dat.csv), "\n\n"))
 
   # define canonical names
   canonical_vars <- list(
@@ -96,12 +96,77 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     title = paste0("Do all data in this file originate from the same site?"))
   if (sit_sam == 2) {
     ix.sit <- get_valid_indices(dat, "site ID")
-    if (length(ix.sit) > 1) {
-      warning(paste0("A maximum of one site ID column is allowed.\n"))
-      return(NULL)
+    if (length(ix.sit) != 1) {
+      stop("Exactly one site ID column is required. Please check data\n")
     }
   } else {
     ix.sit <- NULL
+  }
+
+  # get date/time col
+  ix.tim <- which(names(dat) == dd$colName[which(dd$dataType == "date")])
+  if (length(ix.tim) > 1) {
+    message(paste0("Data dictionary (dd) file denotes more than one columns with dataType = 'date' \n but only one is allowed.\n"))
+    tim.sel <- menu(
+      names(dat)[ix.tim],
+      title = cat("\nWhich date column would you like to use? ")
+    )
+    ix.tim <- names(dat)[ix.tim[tim.sel]]
+  }
+  if (length(ix.tim) == 0) {
+    message(paste0("No columns with dataType = 'date' found in dd file.\n"))
+    ix.tim <- get_valid_indices(dat, "date/timestamp")
+    new.tim <- TRUE
+    if (length(ix.tim) > 1) {
+      message(paste0("Data dictionary (dd) file denotes more than one columns with dataType = 'date' \n but only one is allowed. Using ", ix.tim[1], ", please update dd file\n"))
+      ix.tim <- ix.tim[1]
+    }
+    if (length(ix.tim) == 0) {
+      stop(paste0("Data cannot be ingested as no date/timestamp column supplied.\n"))
+    }
+  }
+
+  # get unique identifiers
+  ix.plt <- which(names(dat) == "plt_name")
+  if (length(ix.plt) != 1) {
+    message("Column 'plt_name' missing from data file.\n")
+    ix <- menu(
+      c("yes", "no"),
+      title = paste0("Were these data collected at the site level?"))
+    if (ix == 1) {
+      ix.plt <- NULL
+    } else {
+      ix.plt <- get_valid_indices(dat, "unique spatial identifier")
+      plt.nms <- names(dat)[ix.plt]
+      for (i in seq_along(ix.plt)) {
+        j <- menu(names(sweddie_core[[expName]]$plot), cat(paste0("\nWhich plot table column matches input data column '", plt.nms[i], "'?\n")))
+        plt.vls <- sweddie_core[[expName]]$plot[[j]]
+        dat.vls <- unlist(dat[ix.plt[i]])
+        diffs <- setdiff(unique(dat.vls), unique(plt.vls))
+        if (length(diffs) > 0) {
+          cat(
+            "\nPlease check input data column '", plt.nms[i], "'. Value/s '",  unlist(diffs), "' do not match values entered in plot table column '", unique(plt.vls), "'.\n"
+          )
+          ix.plt[i] <- 0
+        }
+      }
+      ix.plt <- unlist(lapply(ix.plt, function(x) {x[x != 0]}))
+      if (!length(ix.plt)) {
+        stop("No matching spatial identifiers found")
+      }
+    }
+  } else {
+    # check plt_names against plot table
+    diffs <- setdiff(
+      unique(dat[[ix.plt]]),
+      sweddie_core[[expName]]$plot$plt_name
+    )
+    if (length(diffs) > 0) {
+      stop(
+        paste0("The following plt_name values in the data file do not match those in the plot table: ",
+        paste(diffs, collapse = ", "), "\nplt_name values: ", sweddie_core[[expName]]$plot$plt_name)
+      )
+    }
   }
 
   ## depth
@@ -132,6 +197,20 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     }
   }
 
+  # check for replicate IDs
+  ix <- menu(
+    c("yes", "no"),
+    title = paste0("Do any columns contain replicate IDs?"))
+  if (ix == 1) {
+    ix.rid <- get_valid_indices(dat, "replicate ID")
+    if (length(ix.rid) > 1) {
+      warning("\nOnly one replicate ID column is permitted\n")
+      return(NULL)
+    }
+  } else {
+    ix.rid <- NULL
+  }
+
   # check for summarized data (means/var)
   ix <- menu(
     c("yes", "no"),
@@ -156,81 +235,44 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     ix.rep <- NULL
   }
 
-  # check for replicate IDs
-  ix <- menu(
-    c("yes", "no"),
-    title = paste0("Do any columns contain replicate IDs?"))
-  if (ix == 1) {
-    ix.rid <- get_valid_indices(dat, "replicate ID")
-    if (length(ix.rid) > 1) {
-      warning("\nOnly one replicate ID column is permitted\n")
-      return(NULL)
-    }
-  } else {
-    ix.rid <- NULL
-  }
+  # check for duplicate records
+  ix.key <- c(
+    ix.sit,
+    ix.plt,
+    ix.tim,
+    ix.dpt,
+    ix.rid
+  )
 
-  # get date/time col
-  ix.tim <- which(names(dat) == dd$colName[which(dd$dataType == "date")])
-  if (length(ix.tim) > 1) {
-    warning(paste0("Data dictionary (dd) file denotes more than one columns with dataType = 'date' \n but only one is allowed.\n"))
-    tim.sel <- menu(
-      names(dat)[ix.tim],
-      title = cat("\nWhich date column would you like to use? ")
+  # drop NULLs automatically
+  ix.key <- ix.key[!vapply(ix.key, is.null, logical(1))]
+  key_names <- names(dat)[ix.key]
+
+  message(
+    "Checking uniqueness of observations using: ",
+    paste(key_names, collapse = " × ")
+  )
+
+  key_df <- dat[, ix.key, drop = FALSE]
+
+  dup <- duplicated(key_df)
+
+  if (any(dup)) {
+    dup_rows <- which(dup)
+
+    msg <- paste0(
+      "Duplicate observations detected.\n",
+      "Observations must be uniquely identifiable by:\n  ",
+      paste(key_names, collapse = " × "), "\n",
+      "Number of duplicate rows: ", length(dup_rows), "\n",
+      "First duplicate rows: ", paste(head(dup_rows, 10), collapse = ", ")
     )
-    ix.tim <- names(dat)[ix.tim[tim.sel]]
-  }
-  if (length(ix.tim) == 0) {
-    warning(paste0("No columns with dataType = 'date' found in dd file.\n"))
-    ix.tim <- get_valid_indices(dat, "date/timestamp")
-    new.tim <- TRUE
-    if (length(ix.tim) > 1) {
-      warning(paste0("Data dictionary (dd) file denotes more than one columns with dataType = 'date' \n but only one is allowed. Using ", ix.tim[1], ", please update dd file\n"))
-      ix.tim <- ix.tim[1]
-    }
-    if (length(ix.tim) == 0) {
-      warning(paste0("Data cannot be ingested as no date/timestamp column supplied.\n"))
-      return(NULL)
-    }
+
+    warning(msg)
   }
 
   # get core data
   sweddie_core <- compile_core(verbose = FALSE, write_report = FALSE, EOL_err = TRUE)
-
-  # get plt_name column
-  ix.plt <- which(names(dat) == "plt_name")
-  if (length(ix.plt) == 0) {
-    cat("Required column 'plt_name' missing from data file\n")
-    ix <- menu(
-      c("plot", "site"),
-      title = paste0("Were these data collected at the site or plot level?"))
-    if (ix == 1) {
-      cat("\nColumn 'plt_name' not detected in input data. We can try to match the plot names entered in the 'plot' table with a unique combination of identifying columns in the input data.\n")
-      iix <- menu(c("yes", "no"), title = "\nDo you want to try this?\n")
-      if (iix == 1) {
-        ix.plt <- get_valid_indices(dat, "unique plot identifier")
-        plt.nms <- names(dat)[ix.plt]
-        for (i in seq_along(plt.nms)) {
-          j <- menu(names(sweddie_core[[expName]]$plot), cat(paste0("\nWhich plot table column matches input data column '", plt.nms[i], "'?\n")))
-          plt.vls <- sweddie_core[[expName]]$plot[[j]]
-          dat.vls <- unlist(dat[ix.plt[i]])
-          mch <- unique(dat.vls) %in% unique(plt.vls)
-          if (!all(mch)) {
-            cat("\nPlease check input data column '", plt.nms[i], "'. Value/s '",  unique(dat.vls)[which(!mch)], "' do not match values entered in plot table column '", plt.nms[i], "'.\n")
-          }
-        }
-      }
-    } else {
-      cat("\nPlease ensure column 'plt_name' is present in data and data dictionary files\n")
-      ix.plt <- NULL
-    }
-  }
-
-  # check plt_names against plot table
-  plt.nms <- unlist(unique(dat[ix.plt])) %in% sweddie_core[[expName]]$plot$plt_name
-  if (any(!plt.nms)) {
-    cat("\nThe following plt_name values do not match entries in the plot: ", unlist(unique(dat[ix.plt]), use.names = FALSE)[which(!plt.nms)], "\nAllowable values: ", sweddie_core[[expName]]$plot$plt_name)
-  }
 
   # define data and dd directories
   DATA_DIR <- file.path(DIR, "sweddie", expName, "data")
@@ -261,6 +303,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   for (i in seq_along(dat.ls)) {
 
     nm <- paste(names(dat.ls)[i], sub("\\.csv(\\.gz)?$", "", basename(path.dat.csv)), sep = "_")
+    names(dat.ls)[i] <- nm
     out_csv <- file.path(DATA_DIR, nm)
 
     # check for duplicates (.csv or .csv.gz)
@@ -300,8 +343,8 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
       if (length(idx) == 0) return(NA_character_)
       get(names(canonical_vars)[idx])
     })
-    if (length(original_cols$data) > 1) {
-      original_cols$data <- original_cols$data[i]
+    if (length(match("data", names(original_cols))) > 1) {
+      original_cols["data"] <- original_cols["data"][i]
     }
     dd_rows <- dd[unlist(original_cols, use.names = FALSE), , drop = FALSE]
     dd_rows$colName <- dat_cols

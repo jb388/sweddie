@@ -39,6 +39,7 @@ flmd_helper <- function(DIR = "~/sweddie_db", expName, dataFileName, dateColName
   }
 
   # get data
+  message(paste0("\nAdding ", dataFileName, " to FLMD..."))
   data <- read_csv_cmp(file.path(DATA_DIR, dataFileName), strip.white = TRUE, check.names = FALSE, as.is = TRUE)
 
   # get metadata
