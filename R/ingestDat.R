@@ -278,6 +278,9 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   DATA_DIR <- file.path(DIR, "sweddie", expName, "data")
   DD_DIR <- file.path(DIR, "sweddie", expName, "dd")
 
+  # dat basename
+  base_stub <- sub("\\.csv(\\.gz)?$", "", basename(path.dat.csv))
+
   # create data files
   dat.ls <- setNames(lapply(seq_along(dat.nms.in), function(i) {
 
@@ -300,38 +303,33 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
 
     return(dat.sub)
   }), nm = dat.nms.in)
+  dat_out_paths <- character(length(dat.ls))
   for (i in seq_along(dat.ls)) {
 
-    nm <- paste(names(dat.ls)[i], sub("\\.csv(\\.gz)?$", "", basename(path.dat.csv)), sep = "_")
-    names(dat.ls)[i] <- nm
-    out_csv <- file.path(DATA_DIR, nm)
+    var_stub <- names(dat.ls)[i]  # semantic name, never mutated
+    nm_stub  <- paste(var_stub, base_stub, sep = "_")
 
-    # check for duplicates (.csv or .csv.gz)
-    if (any(startsWith(list.files(DATA_DIR), nm))) {
-      nm <- paste0(
-        readline(
-          prompt = paste0(
-            "Duplicate file name detected. Please supply an alternative name for the ",
-            names(dat.ls)[i], " data file\n"
-          )
-        ),
-        ".csv"
+    # resolve duplicates (no extension yet)
+    if (any(startsWith(list.files(DATA_DIR), nm_stub))) {
+      nm_stub <- readline(
+        prompt = paste0(
+          "Duplicate file name detected. Please supply an alternative name for ",
+          var_stub, " data file (no extension):\n"
+        )
       )
-      out_csv <- file.path(DATA_DIR, nm)
     }
 
     if (compress) {
-      gz_path <- paste0(out_csv, ".csv.gz")
-      con <- gzfile(gz_path, open = "wt")
+      out_path <- file.path(DATA_DIR, paste0(nm_stub, ".csv.gz"))
+      con <- gzfile(out_path, open = "wt")
       write.csv(dat.ls[[i]], con, row.names = FALSE)
       close(con)
-      names(dat.ls)[i] <- basename(gz_path)
     } else {
-      csv_path <- paste0(out_csv, ".csv")
-      write.csv(dat.ls[[i]], csv_path, row.names = FALSE)
-      names(dat.ls)[i] <- basename(csv_path)
+      out_path <- file.path(DATA_DIR, paste0(nm_stub, ".csv"))
+      write.csv(dat.ls[[i]], out_path, row.names = FALSE)
     }
 
+    dat_out_paths[i] <- basename(out_path)
   }
 
   # create dd files
@@ -343,8 +341,8 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
       if (length(idx) == 0) return(NA_character_)
       get(names(canonical_vars)[idx])
     })
-    if (length(match("data", names(original_cols))) > 1) {
-      original_cols["data"] <- original_cols["data"][i]
+    if (length(original_cols$data) > 1) {
+      original_cols$data <- original_cols$data[i]
     }
     dd_rows <- dd[unlist(original_cols, use.names = FALSE), , drop = FALSE]
     dd_rows$colName <- dat_cols
@@ -354,6 +352,30 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     }
     dd_rows
   })
+  for (i in seq_along(dd.ls)) {
+
+    dat_stub <- sub("\\.csv(\\.gz)?$", "", dat_out_paths[i])
+    dd_name  <- paste0(dat_stub, "_dd.csv")
+
+    if (file.exists(file.path(DD_DIR, dd_name))) {
+      warning("Duplicate DD file detected. Existing file ",
+            dd_name, " will be overwritten\n"
+          )
+      ow <- menu(
+        c("yes", "no"),
+        title = "Do you wish to proceed?")
+      if (ow == 2) {
+        return(NULL)
+      }
+    }
+
+    write.csv(
+      dd.ls[[i]],
+      file = file.path(DD_DIR, dd_name),
+      row.names = FALSE
+    )
+  }
+
   for (i in seq_along(dd.ls)) {
 
     nm <- paste0(sub("\\.csv(\\.gz)?$", "", names(dat.ls)[i]), "_dd.csv")
