@@ -376,19 +376,6 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     )
   }
 
-  for (i in seq_along(dd.ls)) {
-
-    nm <- paste0(sub("\\.csv(\\.gz)?$", "", names(dat.ls)[i]), "_dd.csv")
-    if (any(grepl(nm, list.files(file.path(DD_DIR))))) {
-      nm <- paste0(readline(prompt = paste0("Duplicate file name detected. Please supply an alternative name for the ", names(dat.ls[i]), " dd file", "\n")), ".csv")
-    }
-    write.csv(
-      dd.ls[[i]],
-      file = file.path(DD_DIR, nm),
-      row.names = FALSE
-    )
-  }
-
   # update flmd
   if (append.flmd) {
     lapply(seq_along(dat.ls), function(i) {
