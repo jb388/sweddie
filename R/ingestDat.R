@@ -382,7 +382,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
       flmd_helper(
         expName = expName,
         dataFileName = sub("\\.csv(\\.gz)?$", "", dat_out_paths[i]),
-        dateColName = names(dat)[ix.tim],
+        dateColName = "date",
         append = append.flmd,
         write_out = TRUE, ...)
     })
