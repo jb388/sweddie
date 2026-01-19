@@ -328,8 +328,8 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
       names(dat.ls)[i] <- basename(gz_path)
     } else {
       csv_path <- paste0(out_csv, ".csv")
-      write.csv(dat.ls[[i]], out_csv, row.names = FALSE)
-      names(dat.ls)[i] <- basename(out_csv)
+      write.csv(dat.ls[[i]], csv_path, row.names = FALSE)
+      names(dat.ls)[i] <- basename(csv_path)
     }
 
   }
