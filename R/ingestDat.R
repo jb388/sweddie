@@ -9,7 +9,7 @@
 #' @param ... used internally for optional arguments passed to function
 #' @details interactive function for harmonizing raw data which outputs dat files and their dd files, and optionally updates FLMD
 #' @importFrom stats na.omit
-#' @importFrom utils menu write.csv
+#' @importFrom utils menu write.csv head
 #' @importFrom lubridate ymd_hms
 #' @export
 ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, append.flmd, compress = TRUE, ...) {
@@ -244,16 +244,11 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     ix.rid
   )
 
-  dup <- check_unique_records(dat, ix.key, return_dups = TRUE)
+  dup_idx <- check_unique_records(dat, ix.key, return_dups = TRUE)
 
-  if (any(dup)) {
-    dup_rows <- which(dup)
-    warning(
-      paste0(
-        "Observations must be uniquely identifiable by:\n  ",
-        paste(names(dat)[ix.key], collapse = " × "), "\n",
-        "Number of duplicate rows: ", length(dup_rows), "\n",
-        "First duplicate rows: ", paste(head(dup_rows, 10), collapse = ", ")))
+  if (length(dup_idx) > 0) {
+    print(head(dat[dup_idx, ix.key, drop = FALSE]))
+    stop("Please check data file and address duplicate records.")
   }
 
   # get core data

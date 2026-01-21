@@ -24,7 +24,7 @@ check_unique_records <- function(dat,
   if (verbose) {
     message(
       "Checking uniqueness of observations using: ",
-      paste(key_names, collapse = " × ")
+      paste(key_names, collapse = " x ")
     )
   }
 
