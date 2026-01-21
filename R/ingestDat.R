@@ -244,31 +244,16 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     ix.rid
   )
 
-  # drop NULLs automatically
-  ix.key <- ix.key[!vapply(ix.key, is.null, logical(1))]
-  key_names <- names(dat)[ix.key]
-
-  message(
-    "Checking uniqueness of observations using: ",
-    paste(key_names, collapse = " × ")
-  )
-
-  key_df <- dat[, ix.key, drop = FALSE]
-
-  dup <- duplicated(key_df)
+  dup <- check_unique_records(dat, ix.key, return_dups = TRUE)
 
   if (any(dup)) {
     dup_rows <- which(dup)
-
-    msg <- paste0(
-      "Duplicate observations detected.\n",
-      "Observations must be uniquely identifiable by:\n  ",
-      paste(key_names, collapse = " × "), "\n",
-      "Number of duplicate rows: ", length(dup_rows), "\n",
-      "First duplicate rows: ", paste(head(dup_rows, 10), collapse = ", ")
-    )
-
-    warning(msg)
+    warning(
+      paste0(
+        "Observations must be uniquely identifiable by:\n  ",
+        paste(names(dat)[ix.key], collapse = " × "), "\n",
+        "Number of duplicate rows: ", length(dup_rows), "\n",
+        "First duplicate rows: ", paste(head(dup_rows, 10), collapse = ", ")))
   }
 
   # get core data
@@ -336,20 +321,25 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   dd.ls <- lapply(seq_along(dat.ls), function(i) {
 
     dat_cols <- names(dat.ls[[i]])
+
     original_cols <- sapply(dat_cols, function(cn) {
       idx <- which(canonical_vars == cn)
-      if (length(idx) == 0) return(NA_character_)
+      if (length(idx) == 0) return(NA_integer_)
       get(names(canonical_vars)[idx])
     })
-    if (length(original_cols$data) > 1) {
-      original_cols$data <- original_cols$data[i]
+
+    data_idx <- which(names(original_cols) == "data")
+    if (length(data_idx) > 1) {
+      original_cols[data_idx] <- original_cols[data_idx[i]]
     }
-    dd_rows <- dd[unlist(original_cols, use.names = FALSE), , drop = FALSE]
+
+    dd_rows <- dd[original_cols, , drop = FALSE]
     dd_rows$colName <- dat_cols
 
     if (is.na(dd_rows[dd_rows$colName == "date", "dataType"])) {
       dd_rows[dd_rows$colName == "date", "dataType"] <- "date"
     }
+
     dd_rows
   })
   for (i in seq_along(dd.ls)) {
