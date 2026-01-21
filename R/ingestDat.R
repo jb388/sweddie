@@ -331,7 +331,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     dd_rows <- dd[original_cols, , drop = FALSE]
     dd_rows$colName <- dat_cols
 
-    if (is.na(dd_rows[dd_rows$colName == "date", "dataType"])) {
+    if (length(which(dd_rows$dataType == "date")) != 1) {
       dd_rows[dd_rows$colName == "date", "dataType"] <- "date"
     }
 
