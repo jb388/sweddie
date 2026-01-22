@@ -322,7 +322,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
       function(cn) {
         idx <- which(canonical_vars == cn)
         if (length(idx) == 0) return(NA_integer_)
-        get(names(canonical_vars)[idx])[1L]
+        as.integer(get(names(canonical_vars)[idx])[1L])
       },
       integer(1)
     )
