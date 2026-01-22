@@ -162,9 +162,9 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
       sweddie_core[[expName]]$plot$plt_name
     )
     if (length(diffs) > 0) {
+      message("The following plt_name values in the data file do not match those in the plot table:\n")
       stop(
-        paste0("The following plt_name values in the data file do not match those in the plot table: ",
-        paste(diffs, collapse = ", "), "\nplt_name values: ", sweddie_core[[expName]]$plot$plt_name)
+        paste0(paste(diffs, collapse = ", "), "\nplt_name values: ", sweddie_core[[expName]]$plot$plt_name)
       )
     }
   }
@@ -247,7 +247,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   dup_idx <- check_unique_records(dat, ix.key, return_dups = TRUE)
 
   if (length(dup_idx) > 0) {
-    print(head(dat[dup_idx, ix.key, drop = FALSE]))
+    head(dat[dup_idx, ix.key, drop = FALSE])
     stop("Please check data file and address duplicate records.")
   }
 
@@ -317,11 +317,15 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
 
     dat_cols <- names(dat.ls[[i]])
 
-    original_cols <- sapply(dat_cols, function(cn) {
-      idx <- which(canonical_vars == cn)
-      if (length(idx) == 0) return(NA_integer_)
-      get(names(canonical_vars)[idx])
-    })
+    original_cols <- vapply(
+      dat_cols,
+      function(cn) {
+        idx <- which(canonical_vars == cn)
+        if (length(idx) == 0) return(NA_integer_)
+        get(names(canonical_vars)[idx])[1L]
+      },
+      integer(1)
+    )
 
     data_idx <- which(names(original_cols) == "data")
     if (length(data_idx) > 1) {
@@ -331,7 +335,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     dd_rows <- dd[original_cols, , drop = FALSE]
     dd_rows$colName <- dat_cols
 
-    if (length(which(dd_rows$dataType == "date")) != 1) {
+    if (sum(dd_rows$dataType == "date", na.rm = TRUE) != 1) {
       dd_rows[dd_rows$colName == "date", "dataType"] <- "date"
     }
 
