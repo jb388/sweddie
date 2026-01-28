@@ -15,6 +15,11 @@ compile_meta <- function(DIR = "~/sweddie_db",
                          write_report = FALSE,
                          EOL_err = FALSE) {
 
+  # helper fx to remove extensions
+  strip_csv_ext <- function(x) {
+    sub("\\.csv(\\.gz)?$", "", x, ignore.case = TRUE)
+  }
+
   # --- Logging setup ---
   if (write_report) {
     TIMESTAMP <- format(Sys.time(), "%y%m%d-%H%M")
@@ -37,7 +42,7 @@ compile_meta <- function(DIR = "~/sweddie_db",
   .sweddie_log_opts$verbose <- verbose
 
   # --- Internal worker for a single experiment ---
-  .compile_meta_one <- function(DIR, expName) {
+  compile_one <- function(DIR, expName) {
 
     # Header
     vcat(
@@ -48,8 +53,7 @@ compile_meta <- function(DIR = "~/sweddie_db",
     )
 
     # get site dir paths
-    exp.ls <- list.dirs(file.path(DIR, "sweddie"), recursive = FALSE)
-    exp.dir <- exp.ls[match(expName, basename(exp.ls))]
+    exp.dir <- file.path(DIR, "sweddie", expName)
 
     if (!dir.exists(exp.dir)) {
       vcat("Directory does not exist:", exp.dir, "\n")
@@ -59,12 +63,10 @@ compile_meta <- function(DIR = "~/sweddie_db",
     vcat("\n\nCompiling metadata files in", exp.dir, "\n", rep("-", 30), "\n")
 
     # Get file paths
-    exp.dir.ls <- list.files(exp.dir, recursive = TRUE, full.names = TRUE)
-
-    # FLMD and DD files
-    flmd.ls <- exp.dir.ls[grepl("flmd", exp.dir.ls)]
-    dat.ls <- list.files(file.path(exp.dir, "data"), full.names = TRUE)
-    dd.ls   <- list.files(file.path(exp.dir, "dd"), full.names = TRUE)
+    dat.ls  <- list.files(file.path(exp.dir, "data"), full.names = TRUE)
+    dd.ls   <- list.files(file.path(exp.dir, "dd"),   full.names = TRUE)
+    flmd.ls <- list.files(exp.dir, recursive = TRUE, full.names = TRUE)
+    flmd.ls <- flmd.ls[grepl("flmd", flmd.ls)]
 
     # ensure EOL carriage return present
     if (EOL_err) invisible(cr_add(exp.dir))
@@ -86,58 +88,72 @@ compile_meta <- function(DIR = "~/sweddie_db",
     }
 
     # Match data and dd files
-    dat_names <- basename(dat.ls)
-    dd_names <- basename(gsub("_dd", "", dd.ls))
+    dat_base <- strip_csv_ext(basename(dat.ls))
+    dd_base <- gsub("_dd$", "", strip_csv_ext(basename(dd.ls)))
+    missing_dd <- setdiff(dat_base, dd_base)
+    extra_dd   <- setdiff(dd_base, dat_base)
 
-    missing_dd <- setdiff(dat_names, dd_names)
-    dat.clean.ls <- dat.ls[!(dat_names %in% missing_dd)]
-    extra_dd <- setdiff(dd_names, dat_names)
-    dd.clean.ls <- dd.ls[!(dd_names %in% extra_dd)]
-
-    if (length(missing_dd) > 0) {
+    if (length(missing_dd)) {
       vcat("\tThe following input data files are missing data dictionaries and will not be ingested:\n",
            paste(missing_dd, collapse = ", "), "\n")
     }
 
-    if (length(extra_dd) > 0) {
+    if (length(extra_dd)) {
       vcat("\tThe following data dictionary files are missing input data and will not be ingested:\n",
            paste(extra_dd, collapse = ", "), "\n")
     }
 
     # If no files remain after filtering
-    if (length(dd.clean.ls) == 0) {
+    keep <- intersect(dat_base, dd_base)
+    if (!length(keep)) {
       vcat("No valid DD files remain after filtering for experiment:", expName, "\n")
       return(NULL)
     }
 
+    # filtered lists
+    dat.ls <- dat.ls[dat_base %in% keep]
+    dd.ls  <- dd.ls[dd_base  %in% keep]
+
     # Read files
-    dd <- lapply(dd.ls, read.csv, strip.white = TRUE)
-    names(dd) <- gsub("\\.csv", "", basename(dd.ls))
-    flmd <- lapply(flmd.ls, read.csv, strip.white = TRUE)
-    names(flmd) <- gsub("\\.csv", "", basename(flmd.ls))
+    dd <- setNames(
+      lapply(dd.ls, read_csv_cmp),
+      strip_csv_ext(basename(dd.ls))
+    )
+    flmd <- setNames(
+      lapply(flmd.ls, read_csv_cmp),
+      strip_csv_ext(basename(flmd.ls))
+    )
 
     # Check input files against FLMD
-    if (length(dat.ls) > 0) {
-      ix <- which(unlist(lapply(lapply(basename(dat.ls), function(x)
-        unlist(lapply(flmd, function(y) lapply(y$fileName, function(z) grep(glob2rx(z), x))))),
-        function(d) length(d) == 0)))
-      if (length(ix) > 0) {
+    dat_cols <- lapply(dat.ls, get_CSV_nms)
+    names(dat_cols) <- strip_csv_ext(basename(dat.ls))
+
+    valid_data <- vapply(names(dat_cols), function(dn) {
+      any(strip_csv_ext(flmd[[1]]$fileName) == dn)
+    }, logical(1))
+
+    if (any(!valid_data)) {
         vcat("\tThe following input data files are missing FLMD and will not be ingested:\n",
-             basename(dat.ls)[ix], "\n")
-        dat.ls <- dat.ls[-ix]
-      }
+             paste(names(valid_data)[!valid_data], collapse = ", "), "\n")
+    }
+
+    dat_cols <- dat_cols[valid_data]
+
+    if (!length(dat_cols)) {
+      vcat("No data files remain after filtering\n")
+      return(NULL)
     }
 
     # Check columns
-    dat.ls.colNms <- lapply(setNames(dat.ls, basename(dat.ls)), get_CSV_nms)
-    for (i in seq_along(dat.ls.colNms)) {
-      miss <- dat.ls.colNms[[i]][!(dat.ls.colNms[[i]] %in% dd[[i]][["colName"]])]
-      if (length(miss) > 0) {
-        vcat("Data dictionary file '", basename(dd.ls[i]), "' missing column/s: ", miss, "\n")
+    for (nm in names(dat_cols)) {
+      miss <- setdiff(dat_cols[[nm]], dd[[nm]]$colName)
+      if (length(miss)) {
+        vcat("Data dictionary file ", nm, " missing column/s: ",
+             paste(miss, collapse = ", "), "\n")
       }
     }
-
     return(list(flmd = flmd, dd = dd))
+
   }
 
   if (is.null(expName)) {
@@ -145,20 +161,18 @@ compile_meta <- function(DIR = "~/sweddie_db",
   }
 
   # --- Batch/vectorized execution ---
-  if (length(expName) > 1) {
-    res <- lapply(expName, function(x) {
-      tryCatch(
-        .compile_meta_one(DIR, x),
-        error = function(e) {
-          vcat("ERROR processing experiment:", x, "-", e$message, "\n")
-          NULL
-        }
-      )
-    })
-    names(res) <- expName
-    return(res)
-  }
+  res <- lapply(expName, function(x) {
+    tryCatch(
+      compile_one(DIR, x),
+      error = function(e) {
+        vcat("ERROR processing", x, ":", e$message, "\n")
+        NULL
+      }
+    )
+  })
 
-  # Single experiment
-  .compile_meta_one(DIR, expName)
+  names(res) <- expName
+
+  if (length(res) == 1) return(res[[1]])
+  res
 }
