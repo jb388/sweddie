@@ -117,7 +117,7 @@ compile_meta <- function(DIR = "~/sweddie_db",
     # Read files
     dd <- setNames(
       lapply(dd.ls, read_csv_cmp),
-      strip_csv_ext(basename(dd.ls))
+      gsub("_dd$", "", strip_csv_ext(basename(dd.ls)))
     )
     flmd <- setNames(
       lapply(flmd.ls, read_csv_cmp),
