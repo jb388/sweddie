@@ -322,16 +322,15 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     original_cols <- vapply(
       dat_cols,
       function(cn) {
-        idx <- which(canonical_vars == cn)
+        idx <- which(grepl(cn, canonical_vars))
         if (length(idx) == 0) return(NA_integer_)
         as.integer(get(names(canonical_vars)[idx])[1L])
       },
       integer(1)
     )
 
-    data_idx <- which(names(original_cols) == "data")
-    if (length(data_idx) > 1) {
-      original_cols[data_idx] <- original_cols[data_idx[i]]
+    if (length(dat.ls) > 1) {
+      original_cols[data_idx] <- ix.dat[i]
     }
 
     dd_rows <- dd[original_cols, , drop = FALSE]
