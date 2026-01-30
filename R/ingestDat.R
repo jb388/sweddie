@@ -19,14 +19,14 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   # index canonical names
   datTemplate <- read.csv(system.file("extdata", "templates", "data", "datTemplate.csv", package = "sweddie"))
   canonical_vars <- list(
-    ix.sit = "sit_name",
-    ix.plt = "plt_name",
-    ix.rid = "rep_name",
-    ix.dpt = "depth",
-    ix.tim = "date",
-    ix.dat = "data",
-    ix.rep = "rep_num",
-    ix.var = "variance"
+    ix.sit = names(datTemplate)[1],
+    ix.plt = names(datTemplate)[2],
+    ix.rid = names(datTemplate)[3],
+    ix.dpt = names(datTemplate)[4:6],
+    ix.tim = names(datTemplate)[7],
+    ix.dat = names(datTemplate)[8],
+    ix.rep = names(datTemplate)[9],
+    ix.var = names(datTemplate)[10]
   )
 
   # read raw data files
@@ -287,10 +287,11 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
   dat_out_paths <- character(length(dat.ls))
   for (i in seq_along(dat.ls)) {
 
-    var_stub <- names(dat.ls)[i]  # semantic name, never mutated
+    var_stub <- names(dat.ls)[i]
     nm_stub  <- paste(var_stub, base_stub, sep = "_")
+    nm_stub <- gsub("/", " ", nm_stub, fixed = TRUE) # remove slashes
 
-    # resolve duplicates (no extension yet)
+    # resolve duplicates
     if (any(startsWith(list.files(DATA_DIR), nm_stub))) {
       nm_stub <- readline(
         prompt = paste0(
