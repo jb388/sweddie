@@ -1,0 +1,87 @@
+#' Compile SWEDDIE data
+#'
+#' @param DIR local directory for SWEDDIE files
+#' @param verbose should function progress be passed to console?
+#' @return list
+#' @export
+#' @description General function for compiling SWEDDIE data. The resulting list object will reflect the directory structure, i.e., each recursive directory is treated
+#' as a subsequent list element and each (CSV or compressed CSV) file within a directory as a data frame
+#' element within that list. Be wary of compiling all available variables as this will be very slow.
+compile_sweddie <- function(DIR = "~/sweddie_db", verbose = TRUE) {
+
+  DB_DIR <- file.path(DIR, "sweddie")
+  stopifnot(dir.exists(DB_DIR))
+
+  # get metadata
+  meta <- compile_meta(DIR)
+
+  if (!length(meta)) stop("No metadata returned by compile_meta()")
+
+  # define varName query
+  varNames <- get_varNames(meta)
+  sel <- menu(
+    varNames,
+    "Which variables would you like to compile?"
+  )
+  selVars <- varNames[sel]
+
+  # Map each experiment to the FLMD table
+  flmd_ls <- setNames(lapply(names(meta), function(exp) {
+    flmd_tbl <- meta[[exp]]$flmd$flmd
+    if (!"varName" %in% names(flmd_tbl) || !"fileName" %in% names(flmd_tbl)) {
+      if (verbose) message("FLMD table missing 'varName' or 'fileName' columns for experiment ", exp)
+    }
+    # Match requested varName to varName in flmd
+    flmd_tbl[flmd_tbl$varName %in% selVars, ]
+  }), nm = names(meta))
+  flmd_ls <- Filter(function(x) !is.null(x) && nrow(x) > 0, flmd_ls)
+
+  # Check if any requested varName missing across all experiments
+  missing <- setdiff(selVars, unlist(lapply(meta, function(x) x$flmd$flmd$varName)))
+  if (length(missing)) {
+    stop("Requested varName(s) not found in any FLMD: ", paste(missing, collapse = ", "))
+  }
+
+  if (verbose) {
+    message("Compiling requested variables: ", paste(selVars, collapse = ", "))
+  }
+
+  setNames(lapply(seq_along(flmd_ls), function(i) {
+
+    exp_name <- names(flmd_ls)[i]
+    exp_path <- file.path(DB_DIR, exp_name)
+    flmd_df <- flmd_ls[[i]]
+    n_files  <- nrow(flmd_df)
+
+    if (verbose) {
+      message(
+        "\n===== Compiling experiment: ", exp_name,
+        " (", n_files, " file", if (n_files != 1) "s", ") ====="
+      )
+    }
+
+    data <- setNames(vector("list", n_files), flmd_df$fileName)
+    dd <- setNames(vector("list", n_files), flmd_df$fileName)
+
+    for (j in seq_len(n_files)) {
+      fileName <- flmd_df$fileName[j]
+      ddName <- sub("\\.csv.*$", "_dd.csv", fileName)
+
+      if (verbose) {
+        message("  [", j, "/", n_files, "] ", fileName)
+      }
+
+      data[[j]] <- read_csv_cmp(file.path(exp_path, "data", fileName))
+      dd[[j]] <- read.csv(file.path(exp_path, "dd", ddName))
+    }
+
+    list(
+      experiment = read.csv(file.path(exp_path, "experiment.csv")),
+      site = read.csv(file.path(exp_path, "site.csv")),
+      plot = read.csv(file.path(exp_path, "plot.csv")),
+      data = data,
+      dd = dd,
+      flmd = list(flmd = flmd_df))
+
+  }), nm = names(flmd_ls))
+}

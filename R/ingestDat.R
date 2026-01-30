@@ -16,7 +16,8 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
 
   message(paste0("Experiment name: ", expName, "\n", "File name: ", basename(path.dat.csv), "\n\n"))
 
-  # define canonical names
+  # index canonical names
+  datTemplate <- read.csv(system.file("extdata", "templates", "data", "datTemplate.csv", package = "sweddie"))
   canonical_vars <- list(
     ix.sit = "sit_name",
     ix.plt = "plt_name",
