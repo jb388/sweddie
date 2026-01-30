@@ -330,7 +330,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     )
 
     if (length(dat.ls) > 1) {
-      original_cols[data_idx] <- ix.dat[i]
+      original_cols[which(names(original_cols) == "data")] <- ix.dat[i]
     }
 
     dd_rows <- dd[original_cols, , drop = FALSE]
