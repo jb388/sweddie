@@ -29,12 +29,12 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     ix.var = names(datTemplate)[10]
   )
 
+  # get metadata
+  sweddie_meta <- compile_meta(verbose = FALSE, EOL_err = TRUE)
+
   # read raw data files
   dat <- read_csv_cmp(path.dat.csv, strip.white = TRUE, check.names = FALSE, as.is = TRUE)
   dd <- read_csv_cmp(path.dd.csv, strip.white = TRUE, check.names = FALSE, as.is = TRUE)
-
-  # get metadata
-  sweddie_meta <- compile_meta(verbose = FALSE, EOL_err = TRUE)
 
   # check data orientation
   hzn.vrt <- menu(
