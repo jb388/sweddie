@@ -24,11 +24,41 @@ compile_sweddie <- function(DIR = "~/sweddie_db", exp_name = NULL, verbose = TRU
 
   # define varName query
   varNames <- get_varNames(meta)
-  sel <- menu(
-    varNames,
-    "Which variables would you like to compile?"
-  )
-  selVars <- varNames[sel]
+  while (TRUE) {
+
+    # user defined varNames
+    print(varNames)
+    input <- readline(prompt=paste0("Which variables would you like to compile? Enter the indices or index from the above list. "))
+
+    # Check if the user wants to cancel
+    if (input == '0') {
+      return(NULL)
+    }
+
+    # Try to convert input to numeric
+    ix.in <- unlist(strsplit(input, ","))
+    ix.cln <- sapply(ix.in, grepl, pattern = ":")
+    ix.csv <- as.numeric(ix.in[which(!ix.cln)])
+
+    if(any(ix.cln)) {
+      ix.rng <- unlist(lapply(sapply(
+        ix.in[which(ix.cln)], strsplit, ":"), function(x) {
+          seq(x[1], x[2])
+        }), use.names = FALSE)
+      ix <- c(ix.csv, ix.rng)
+    } else {
+      ix <- ix.csv
+    }
+
+    # Check if the indices are valid
+    if (all(!is.na(ix)) && all(ix >= 1) && all(ix <= length(varNames))) {
+      return(ix)
+    } else {
+      cat("Error: Invalid indices. Please ensure the indices are numeric and within the range (1 to ", ncol(df), ").\n")
+    }
+  }
+
+  selVars <- varNames[ix]
 
   # Map each experiment to the FLMD table
   flmd_ls <- setNames(lapply(names(meta), function(exp) {

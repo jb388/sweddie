@@ -4,10 +4,12 @@
 \alias{compile_sweddie}
 \title{Compile SWEDDIE data}
 \usage{
-compile_sweddie(DIR = "~/sweddie_db", verbose = TRUE)
+compile_sweddie(DIR = "~/sweddie_db", exp_name = NULL, verbose = TRUE)
 }
 \arguments{
 \item{DIR}{local directory for SWEDDIE files}
+
+\item{exp_name}{name of experiment for which to compile data. Default (NULL) returns data from all experiments.}
 
 \item{verbose}{should function progress be passed to console?}
 }
