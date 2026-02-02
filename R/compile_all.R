@@ -15,22 +15,21 @@
 #' database as it will be very slow. Observational data are best retrieved with
 #' filtering queries.
 compile_all <- function(
-    DIR = "~/sweddie_db",
+    DIR = "~/sweddie_db/sweddie",
     pattern = "\\.csv(\\.gz)?$",
     read_fun = read_csv_cmp,
     verbose = TRUE,
     ...
 ) {
 
-  DB_DIR <- file.path(DIR, "sweddie")
-  stopifnot(dir.exists(DB_DIR))
+  stopifnot(dir.exists(DIR))
 
   if (verbose) {
-    message("Reading directory: ", file.path(DB_DIR))
+    message("Reading directory: ", file.path(DIR))
   }
 
   out <- list()
-  entries <- list.files(DB_DIR, full.names = TRUE)
+  entries <- list.files(DIR, full.names = TRUE)
 
   for (entry in entries) {
 
