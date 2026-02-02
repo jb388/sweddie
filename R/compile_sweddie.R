@@ -1,19 +1,24 @@
 #' Compile SWEDDIE data
 #'
 #' @param DIR local directory for SWEDDIE files
+#' @param exp_name name of experiment for which to compile data. Default (NULL) returns data from all experiments.
 #' @param verbose should function progress be passed to console?
 #' @return list
 #' @export
 #' @description General function for compiling SWEDDIE data. The resulting list object will reflect the directory structure, i.e., each recursive directory is treated
 #' as a subsequent list element and each (CSV or compressed CSV) file within a directory as a data frame
 #' element within that list. Be wary of compiling all available variables as this will be very slow.
-compile_sweddie <- function(DIR = "~/sweddie_db", verbose = TRUE) {
+compile_sweddie <- function(DIR = "~/sweddie_db", exp_name = NULL, verbose = TRUE) {
 
   DB_DIR <- file.path(DIR, "sweddie")
   stopifnot(dir.exists(DB_DIR))
 
   # get metadata
   meta <- compile_meta(DIR)
+
+  if (!is.null(exp_name)) {
+    meta <- meta[exp_name]
+  }
 
   if (!length(meta)) stop("No metadata returned by compile_meta()")
 

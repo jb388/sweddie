@@ -15,11 +15,6 @@ compile_meta <- function(DIR = "~/sweddie_db",
                          write_report = FALSE,
                          EOL_err = FALSE) {
 
-  # helper fx to remove extensions
-  strip_csv_ext <- function(x) {
-    sub("\\.csv(\\.gz)?$", "", x, ignore.case = TRUE)
-  }
-
   # --- Logging setup ---
   if (write_report) {
     TIMESTAMP <- format(Sys.time(), "%y%m%d-%H%M")
@@ -117,7 +112,7 @@ compile_meta <- function(DIR = "~/sweddie_db",
     # Read files
     dd <- setNames(
       lapply(dd.ls, read_csv_cmp),
-      gsub("_dd$", "", strip_csv_ext(basename(dd.ls)))
+      gsub("_dd$", "", sweddie:::strip_csv_ext(basename(dd.ls)))
     )
     flmd <- setNames(
       lapply(flmd.ls, read_csv_cmp),
