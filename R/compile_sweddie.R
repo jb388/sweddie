@@ -54,7 +54,7 @@ compile_sweddie <- function(DIR = "~/sweddie_db", exp_name = NULL, verbose = TRU
     if (all(!is.na(ix)) && all(ix >= 1) && all(ix <= length(varNames))) {
       return(ix)
     } else {
-      cat("Error: Invalid indices. Please ensure the indices are numeric and within the range (1 to ", ncol(df), ").\n")
+      cat("Error: Invalid indices. Please ensure the indices are numeric and within the range (1 to ", length(varNames), ").\n")
     }
   }
 
