@@ -8,7 +8,7 @@
 #' @description General function for compiling SWEDDIE data. The resulting list object will reflect the directory structure, i.e., each recursive directory is treated
 #' as a subsequent list element and each (CSV or compressed CSV) file within a directory as a data frame
 #' element within that list. Be wary of compiling all available variables as this will be very slow.
-compile_sweddie <- function(DIR = "~/sweddie_db", exp_name = NULL, verbose = TRUE) {
+compile_sweddie <- function(DIR = "~/sweddie_db", varNames = NULL, exp_name = NULL, verbose = TRUE) {
 
   DB_DIR <- file.path(DIR, "sweddie")
   stopifnot(dir.exists(DB_DIR))
@@ -23,42 +23,43 @@ compile_sweddie <- function(DIR = "~/sweddie_db", exp_name = NULL, verbose = TRU
   if (!length(meta)) stop("No metadata returned by compile_meta()")
 
   # define varName query
-  varNames <- get_varNames(meta)
-  while (TRUE) {
+  if (is.null(varNames)) {
+    varNames <- get_varNames(meta)
+    while (TRUE) {
 
-    # user defined varNames
-    print(varNames)
-    input <- readline(prompt=paste0("Which variables would you like to compile? Enter the indices or index from the above list. "))
+      # user defined varNames
+      print(varNames)
+      input <- readline(prompt=paste0("Which variables would you like to compile? Enter the indices or index from the above list. "))
 
-    # Check if the user wants to cancel
-    if (input == '0') {
-      return(NULL)
+      # Check if the user wants to cancel
+      if (input == '0') {
+        return(NULL)
+      }
+
+      # Try to convert input to numeric
+      ix.in <- unlist(strsplit(input, ","))
+      ix.cln <- sapply(ix.in, grepl, pattern = ":")
+      ix.csv <- as.numeric(ix.in[which(!ix.cln)])
+
+      if(any(ix.cln)) {
+        ix.rng <- unlist(lapply(sapply(
+          ix.in[which(ix.cln)], strsplit, ":"), function(x) {
+            seq(x[1], x[2])
+          }), use.names = FALSE)
+        ix <- c(ix.csv, ix.rng)
+      } else {
+        ix <- ix.csv
+      }
+
+      # Check if the indices are valid
+      if (all(!is.na(ix)) && all(ix >= 1) && all(ix <= length(varNames))) {
+        return(ix)
+      } else {
+        cat("Error: Invalid indices. Please ensure the indices are numeric and within the range (1 to ", length(varNames), ").\n")
+      }
     }
-
-    # Try to convert input to numeric
-    ix.in <- unlist(strsplit(input, ","))
-    ix.cln <- sapply(ix.in, grepl, pattern = ":")
-    ix.csv <- as.numeric(ix.in[which(!ix.cln)])
-
-    if(any(ix.cln)) {
-      ix.rng <- unlist(lapply(sapply(
-        ix.in[which(ix.cln)], strsplit, ":"), function(x) {
-          seq(x[1], x[2])
-        }), use.names = FALSE)
-      ix <- c(ix.csv, ix.rng)
-    } else {
-      ix <- ix.csv
-    }
-
-    # Check if the indices are valid
-    if (all(!is.na(ix)) && all(ix >= 1) && all(ix <= length(varNames))) {
-      return(ix)
-    } else {
-      cat("Error: Invalid indices. Please ensure the indices are numeric and within the range (1 to ", length(varNames), ").\n")
-    }
+    selVars <- varNames[ix]
   }
-
-  selVars <- varNames[ix]
 
   # Map each experiment to the FLMD table
   flmd_ls <- setNames(lapply(names(meta), function(exp) {
