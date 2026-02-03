@@ -1,8 +1,9 @@
 #' Compile SWEDDIE data
 #'
-#' @param DIR local directory for SWEDDIE files
-#' @param exp_name name of experiment for which to compile data. Default (NULL) returns data from all experiments.
-#' @param verbose should function progress be passed to console?
+#' @param DIR Local directory for SWEDDIE files
+#' @param varNames Optional vector of variable names. Names supplied must be an exact match with the values returned by 'get_varNames'. If NULL (default), user will be prompted to select variables via console prompt.
+#' @param exp_name Name of experiment for which to compile data. Default (NULL) returns data from all experiments.
+#' @param verbose Should function progress be passed to console?
 #' @return list
 #' @export
 #' @description General function for compiling SWEDDIE data. The resulting list object will reflect the directory structure, i.e., each recursive directory is treated

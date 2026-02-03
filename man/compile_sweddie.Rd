@@ -4,14 +4,21 @@
 \alias{compile_sweddie}
 \title{Compile SWEDDIE data}
 \usage{
-compile_sweddie(DIR = "~/sweddie_db", exp_name = NULL, verbose = TRUE)
+compile_sweddie(
+  DIR = "~/sweddie_db",
+  varNames = NULL,
+  exp_name = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
-\item{DIR}{local directory for SWEDDIE files}
+\item{DIR}{Local directory for SWEDDIE files}
 
-\item{exp_name}{name of experiment for which to compile data. Default (NULL) returns data from all experiments.}
+\item{varNames}{Optional vector of variable names. Names supplied must be an exact match with the values returned by 'get_varNames'. If NULL (default), user will be prompted to select variables via console prompt.}
 
-\item{verbose}{should function progress be passed to console?}
+\item{exp_name}{Name of experiment for which to compile data. Default (NULL) returns data from all experiments.}
+
+\item{verbose}{Should function progress be passed to console?}
 }
 \value{
 list

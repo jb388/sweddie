@@ -5,7 +5,7 @@
 \title{Compile all SWEDDIE data}
 \usage{
 compile_all(
-  DIR = "~/sweddie_db",
+  DIR = "~/sweddie_db/sweddie",
   pattern = "\\\\.csv(\\\\.gz)?$",
   read_fun = read_csv_cmp,
   verbose = TRUE,
