@@ -132,7 +132,11 @@ compile_sweddie <- function(DIR = "~/sweddie_db", varNames = NULL, exp_name = NU
 
     })
 
-    flmd_ls_filtered[[exp_name]] <- do.call(rbind, keep_rows)
+    flmd_ls_filtered[[exp_name]] <- do.call(
+      rbind,
+      lapply(keep_rows, function(x) as.data.frame(x, stringsAsFactors = FALSE))
+    )
+    rownames(flmd_ls_filtered[[exp_name]]) <- NULL
   }
 
   if (verbose) {
