@@ -99,9 +99,10 @@ compile_sweddie <- function(DIR = "~/sweddie_db", varNames = NULL, exp_name = NU
       print(data.frame(
         index = seq_len(nrow(subdf)),
         fileName = subdf$fileName,
-        sit = subdf$sit_name,
+        site = subdf$sit_name,
         start = subdf$startDate,
-        end = subdf$endDate
+        end = subdf$endDate,
+        notes = subdf$notes
       ), row.names = FALSE)
 
       repeat {
