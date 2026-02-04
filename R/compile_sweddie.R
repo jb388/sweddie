@@ -64,6 +64,12 @@ compile_sweddie <- function(DIR = "~/sweddie_db", varNames = NULL, exp_name = NU
     selVars <- varNames
   }
 
+  # Check if any requested varName missing across all experiments
+  missing <- setdiff(selVars, unlist(lapply(meta, function(x) x$flmd$flmd$varName)))
+  if (length(missing)) {
+    stop("Requested varName(s) not found in any FLMD: ", paste(missing, collapse = ", "))
+  }
+
   # Map each experiment to the FLMD table
   flmd_ls <- setNames(lapply(names(meta), function(exp) {
     flmd_tbl <- meta[[exp]]$flmd$flmd
@@ -75,21 +81,68 @@ compile_sweddie <- function(DIR = "~/sweddie_db", varNames = NULL, exp_name = NU
   }), nm = names(meta))
   flmd_ls <- Filter(function(x) !is.null(x) && nrow(x) > 0, flmd_ls)
 
-  # Check if any requested varName missing across all experiments
-  missing <- setdiff(selVars, unlist(lapply(meta, function(x) x$flmd$flmd$varName)))
-  if (length(missing)) {
-    stop("Requested varName(s) not found in any FLMD: ", paste(missing, collapse = ", "))
+  # select data files
+  flmd_ls_filtered <- vector("list", length(flmd_ls))
+  names(flmd_ls_filtered) <- names(flmd_ls)
+  for (exp_name in names(flmd_ls_filtered)) {
+
+    flmd_df <- flmd_ls[[exp_name]]
+    by_var <- split(flmd_df, flmd_df$varName)
+    keep_rows <- lapply(names(by_var), function(vn) {
+
+      subdf <- by_var[[vn]]
+      if (nrow(subdf) == 1) return(subdf)
+      cat("\nVariable:", vn,
+          "\nExperiment:", exp_name,
+          "\nMultiple files detected:\n")
+
+      print(data.frame(
+        index = seq_len(nrow(subdf)),
+        fileName = subdf$fileName,
+        sit = subdf$sit_name,
+        start = subdf$startDate,
+        end = subdf$endDate
+      ), row.names = FALSE)
+
+      repeat {
+        input <- readline(
+          prompt = "Select file indices to ingest (comma or range, 0=cancel): "
+        )
+
+        if (input == "0") stop("User cancelled.")
+        ix.in <- unlist(strsplit(input, ","))
+        ix.cln <- grepl(":", ix.in)
+        ix.csv <- as.numeric(ix.in[!ix.cln])
+
+        if (any(ix.cln)) {
+          ix.rng <- unlist(lapply(strsplit(ix.in[ix.cln], ":"), function(x)
+            seq(as.numeric(x[1]), as.numeric(x[2]))))
+          ix <- c(ix.csv, ix.rng)
+        } else {
+          ix <- ix.csv
+        }
+
+        if (all(!is.na(ix)) && all(ix >= 1 & ix <= nrow(subdf))) {
+          return(subdf[ix, , drop = FALSE])
+        }
+
+        cat("Invalid selection. Try again.\n")
+      }
+
+    })
+
+    flmd_ls_filtered[[exp_name]] <- do.call(rbind, keep_rows)
   }
 
   if (verbose) {
     message("Compiling requested variables: ", paste(selVars, collapse = ", "))
   }
 
-  setNames(lapply(seq_along(flmd_ls), function(i) {
+  setNames(lapply(seq_along(flmd_ls_filtered), function(i) {
 
-    exp_name <- names(flmd_ls)[i]
+    exp_name <- names(flmd_ls_filtered)[i]
     exp_path <- file.path(DB_DIR, exp_name)
-    flmd_df <- flmd_ls[[i]]
+    flmd_df <- flmd_ls_filtered[[i]]
     n_files  <- nrow(flmd_df)
 
     if (verbose) {
@@ -122,5 +175,5 @@ compile_sweddie <- function(DIR = "~/sweddie_db", varNames = NULL, exp_name = NU
       dd = dd,
       flmd = list(flmd = flmd_df))
 
-  }), nm = names(flmd_ls))
+  }), nm = names(flmd_ls_filtered))
 }
