@@ -23,37 +23,32 @@ compile_sweddie <- function(DIR = "~/sweddie_db", varNames = NULL, exp_name = NU
 
   if (!length(meta)) stop("No metadata returned by compile_meta()")
 
+  # index parser fx
+  parse_indices <- function(input, max_val) {
+    ix.in <- unlist(strsplit(input, ","))
+    ix.cln <- grepl(":", ix.in)
+    ix.csv <- as.numeric(ix.in[!ix.cln])
+    if (any(ix.cln)) {
+      ix.rng <- unlist(lapply(strsplit(ix.in[ix.cln], ":"), function(x)
+        seq(as.numeric(x[1]), as.numeric(x[2]))))
+      ix <- c(ix.csv, ix.rng)
+    } else ix <- ix.csv
+    if (all(!is.na(ix)) && all(ix >= 1 & ix <= max_val)) return(ix)
+    stop("Invalid selection. Must be numbers between 1 and ", max_val)
+  }
+
   # define varName query
   if (is.null(varNames)) {
     varNames <- get_varNames(meta)
     repeat {
       print(varNames)
-      input <- readline(prompt = "Which variables would you like to compile? Enter indices: ")
-
+      input <- readline("Which variables would you like to compile? Enter indices: ")
       if (input == "0") stop("User cancelled.")
-
-      ix.in <- unlist(strsplit(input, ","))
-      ix.cln <- grepl(":", ix.in)
-      ix.csv <- as.numeric(ix.in[!ix.cln])
-
-      if (any(ix.cln)) {
-        ix.rng <- unlist(lapply(strsplit(ix.in[ix.cln], ":"), function(x) seq(as.numeric(x[1]), as.numeric(x[2]))))
-        ix <- c(ix.csv, ix.rng)
-      } else {
-        ix <- ix.csv
-      }
-
-      if (all(!is.na(ix)) && all(ix >= 1) && all(ix <= length(varNames))) {
-        break
-      }
-
-      cat("Invalid selection — try again.\n")
+      ix <- parse_indices(input, length(varNames))
+      break
     }
-
-    selVars <- varNames[ix]  # <-- assign after loop
-  } else {
-    selVars <- varNames
-  }
+    selVars <- varNames[ix]
+  } else selVars <- varNames
 
   # Check if any requested varName missing across all experiments
   missing <- setdiff(selVars, unlist(lapply(meta, function(x) x$flmd$flmd$varName)))
@@ -72,69 +67,34 @@ compile_sweddie <- function(DIR = "~/sweddie_db", varNames = NULL, exp_name = NU
   }), nm = names(meta))
   flmd_ls <- Filter(function(x) !is.null(x) && nrow(x) > 0, flmd_ls)
 
-  # select data files
-  flmd_ls_filtered <- vector("list", length(flmd_ls))
-  names(flmd_ls_filtered) <- names(flmd_ls)
-  for (exp_name in names(flmd_ls_filtered)) {
+  # duplicate file check fx
+  select_rows <- function(subdf, varName, expName) {
+    if (nrow(subdf) == 1) return(subdf)
+    cat("\nVariable:", varName, "\nExperiment:", expName, "\nMultiple files detected:\n")
+    print(subdf[, c("fileName","sit_name","startDate","endDate","notes")], row.names=FALSE)
+    repeat {
+      input <- readline("Select file indices to ingest (comma or range, 0=cancel): ")
+      if (input == "0") stop("User cancelled.")
+      ix <- parse_indices(input, nrow(subdf))
+      return(subdf[ix, , drop = FALSE])
+    }
+  }
 
+  # select data files
+  flmd_ls_filtered <- lapply(names(flmd_ls), function(exp_name) {
     flmd_df <- flmd_ls[[exp_name]]
     by_var <- split(flmd_df, flmd_df$varName)
-    keep_rows <- lapply(names(by_var), function(vn) {
-
-      subdf <- by_var[[vn]]
-      if (nrow(subdf) == 1) return(subdf)
-      cat("\nVariable:", vn,
-          "\nExperiment:", exp_name,
-          "\nMultiple files detected:\n")
-
-      print(data.frame(
-        index = seq_len(nrow(subdf)),
-        fileName = subdf$fileName,
-        site = subdf$sit_name,
-        start = subdf$startDate,
-        end = subdf$endDate,
-        notes = subdf$notes
-      ), row.names = FALSE)
-
-      repeat {
-        input <- readline(
-          prompt = "Select file indices to ingest (comma or range, 0=cancel): "
-        )
-
-        if (input == "0") stop("User cancelled.")
-        ix.in <- unlist(strsplit(input, ","))
-        ix.cln <- grepl(":", ix.in)
-        ix.csv <- as.numeric(ix.in[!ix.cln])
-
-        if (any(ix.cln)) {
-          ix.rng <- unlist(lapply(strsplit(ix.in[ix.cln], ":"), function(x)
-            seq(as.numeric(x[1]), as.numeric(x[2]))))
-          ix <- c(ix.csv, ix.rng)
-        } else {
-          ix <- ix.csv
-        }
-
-        if (all(!is.na(ix)) && all(ix >= 1 & ix <= nrow(subdf))) {
-          return(subdf[ix, , drop = FALSE])
-        }
-
-        cat("Invalid selection. Try again.\n")
-      }
-
-    })
-
-    flmd_ls_filtered[[exp_name]] <- do.call(
-      rbind,
-      lapply(keep_rows, function(x) as.data.frame(x, stringsAsFactors = FALSE))
-    )
-    rownames(flmd_ls_filtered[[exp_name]]) <- NULL
-  }
+    do.call(rbind, lapply(names(by_var), function(vn) select_rows(by_var[[vn]], vn, exp_name)))
+  })
+  names(flmd_ls_filtered) <- names(flmd_ls)
+  flmd_ls_filtered <- lapply(flmd_ls_filtered, function(df) { rownames(df) <- NULL; df })
 
   if (verbose) {
     message("Compiling requested variables: ", paste(selVars, collapse = ", "))
   }
 
-  test<-setNames(lapply(seq_along(flmd_ls_filtered), function(i) {
+  # read data and dd files
+  setNames(lapply(seq_along(flmd_ls_filtered), function(i) {
 
     exp_name <- names(flmd_ls_filtered)[i]
     exp_path <- file.path(DB_DIR, exp_name)
