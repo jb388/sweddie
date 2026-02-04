@@ -284,35 +284,57 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
 
     return(dat.sub)
   }), nm = dat.nms.in)
-  dat_out_paths <- character(length(dat.ls))
+  out_map <- list()
   for (i in seq_along(dat.ls)) {
 
     var_stub <- names(dat.ls)[i]
-    nm_stub  <- paste(var_stub, base_stub, sep = "_")
-    nm_stub <- sanitize_str(nm_stub)
+    nm_stub_base <- sanitize_str(paste(var_stub, base_stub, sep = "_"))
+    dat_i <- dat.ls[[i]]
 
-    # resolve duplicates
-    if (any(startsWith(list.files(DATA_DIR), nm_stub))) {
-      nm_stub <- readline(
-        prompt = paste0(
-          "Duplicate file name detected. Please supply an alternative name for ",
-          var_stub, " data file (no extension):\n"
-        )
-      )
-    }
-
-    if (compress) {
-      out_path <- file.path(DATA_DIR, paste0(nm_stub, ".csv.gz"))
-      con <- gzfile(out_path, open = "wt")
-      write.csv(dat.ls[[i]], con, row.names = FALSE)
-      close(con)
+    if (!is.null(ix.sit)) {
+      sit_col_name <- canonical_vars$ix.sit
+      sit_vals <- unique(dat_i[[sit_col_name]])
+      dat_split <- split(dat_i, dat_i[[sit_col_name]])
     } else {
-      out_path <- file.path(DATA_DIR, paste0(nm_stub, ".csv"))
-      write.csv(dat.ls[[i]], out_path, row.names = FALSE)
+      dat_split <- list(all = dat_i)
     }
 
-    dat_out_paths[i] <- basename(out_path)
+    for (sit_name in names(dat_split)) {
+
+      dat_piece <- dat_split[[sit_name]]
+
+      nm_stub <- nm_stub_base
+
+      if (!is.null(ix.sit)) {
+        nm_stub <- sanitize_str(paste0(nm_stub_base, "_", sit_name))
+      }
+      # resolve duplicates
+      if (any(startsWith(list.files(DATA_DIR), nm_stub))) {
+        nm_stub <- readline(
+          prompt = paste0(
+            "Duplicate file name detected. Please supply an alternative name for ",
+            var_stub, " data file (no extension):\n"
+          )
+        )
+      }
+
+      if (compress) {
+        out_path <- file.path(DATA_DIR, paste0(nm_stub, ".csv.gz"))
+        con <- gzfile(out_path, open = "wt")
+        write.csv(dat.ls[[i]], con, row.names = FALSE)
+        close(con)
+      } else {
+        out_path <- file.path(DATA_DIR, paste0(nm_stub, ".csv"))
+        write.csv(dat.ls[[i]], out_path, row.names = FALSE)
+      }
+
+      out_map[[length(out_map)+1]] <- list(
+        var_index = i,
+        site = sit_name,
+        file = basename(out_path))
+    }
   }
+  out_map <- do.call(rbind, lapply(out_map, as.data.frame))
 
   # create dd files
   dd.ls <- lapply(seq_along(dat.ls), function(i) {
@@ -342,15 +364,15 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
 
     dd_rows
   })
-  for (i in seq_along(dd.ls)) {
+  for (k in seq_len(nrow(out_map))) {
 
-    dat_stub <- sub("\\.csv(\\.gz)?$", "", dat_out_paths[i])
+    i <- out_map$var_index[k]
+    dat_stub <- sub("\\.csv(\\.gz)?$", "", out_map$file[k])
     dd_name  <- paste0(dat_stub, "_dd.csv")
 
     if (file.exists(file.path(DD_DIR, dd_name))) {
-      warning("Duplicate DD file detected. Existing file ",
-            dd_name, " will be overwritten\n"
-          )
+      message("Duplicate DD file detected. Existing file ",
+              dd_name, " will be overwritten\n")
       ow <- menu(
         c("yes", "no"),
         title = "Do you wish to proceed?")
@@ -368,10 +390,10 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
 
   # update flmd
   if (append.flmd) {
-    lapply(seq_along(dat.ls), function(i) {
+    lapply(seq_len(nrow(out_map)), function(i) {
       flmd_helper(
         expName = expName,
-        dataFileName = sub("\\.csv(\\.gz)?$", "", dat_out_paths[i]),
+        dataFileName = sub("\\.csv(\\.gz)?$", "", out_map$file[i]),
         dateColName = "date",
         append = append.flmd,
         write_out = TRUE, ...)
