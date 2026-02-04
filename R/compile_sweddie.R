@@ -26,40 +26,31 @@ compile_sweddie <- function(DIR = "~/sweddie_db", varNames = NULL, exp_name = NU
   # define varName query
   if (is.null(varNames)) {
     varNames <- get_varNames(meta)
-    while (TRUE) {
-
-      # user defined varNames
+    repeat {
       print(varNames)
-      input <- readline(prompt=paste0("Which variables would you like to compile? Enter the indices or index from the above list. "))
+      input <- readline(prompt = "Which variables would you like to compile? Enter indices: ")
 
-      # Check if the user wants to cancel
-      if (input == '0') {
-        return(NULL)
-      }
+      if (input == "0") stop("User cancelled.")
 
-      # Try to convert input to numeric
       ix.in <- unlist(strsplit(input, ","))
-      ix.cln <- sapply(ix.in, grepl, pattern = ":")
-      ix.csv <- as.numeric(ix.in[which(!ix.cln)])
+      ix.cln <- grepl(":", ix.in)
+      ix.csv <- as.numeric(ix.in[!ix.cln])
 
-      if(any(ix.cln)) {
-        ix.rng <- unlist(lapply(sapply(
-          ix.in[which(ix.cln)], strsplit, ":"), function(x) {
-            seq(x[1], x[2])
-          }), use.names = FALSE)
+      if (any(ix.cln)) {
+        ix.rng <- unlist(lapply(strsplit(ix.in[ix.cln], ":"), function(x) seq(as.numeric(x[1]), as.numeric(x[2]))))
         ix <- c(ix.csv, ix.rng)
       } else {
         ix <- ix.csv
       }
 
-      # Check if the indices are valid
       if (all(!is.na(ix)) && all(ix >= 1) && all(ix <= length(varNames))) {
-        return(ix)
-      } else {
-        cat("Error: Invalid indices. Please ensure the indices are numeric and within the range (1 to ", length(varNames), ").\n")
+        break
       }
+
+      cat("Invalid selection — try again.\n")
     }
-    selVars <- varNames[ix]
+
+    selVars <- varNames[ix]  # <-- assign after loop
   } else {
     selVars <- varNames
   }
@@ -143,7 +134,7 @@ compile_sweddie <- function(DIR = "~/sweddie_db", varNames = NULL, exp_name = NU
     message("Compiling requested variables: ", paste(selVars, collapse = ", "))
   }
 
-  setNames(lapply(seq_along(flmd_ls_filtered), function(i) {
+  test<-setNames(lapply(seq_along(flmd_ls_filtered), function(i) {
 
     exp_name <- names(flmd_ls_filtered)[i]
     exp_path <- file.path(DB_DIR, exp_name)
