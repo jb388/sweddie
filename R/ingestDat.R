@@ -280,7 +280,15 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
 
     # subset data and rename as needed
     dat.sub <- dat[, ix.all, drop = FALSE]
-    names(dat.sub) <- canonical_vars[match(names(ix.all), names(canonical_vars))]
+    new_names <- unlist(lapply(names(ix.all), function(nm) {
+      if (nm == "ix.dpt") {
+        canonical_vars$ix.dpt[seq_along(ix.all[[nm]])]
+      } else {
+        canonical_vars[[nm]][1]
+      }
+    }))
+
+    names(dat.sub) <- new_names
 
     return(dat.sub)
   }), nm = dat.nms.in)
@@ -321,11 +329,11 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
       if (compress) {
         out_path <- file.path(DATA_DIR, paste0(nm_stub, ".csv.gz"))
         con <- gzfile(out_path, open = "wt")
-        write.csv(dat.ls[[i]], con, row.names = FALSE)
+        write.csv(dat_piece, con, row.names = FALSE)
         close(con)
       } else {
         out_path <- file.path(DATA_DIR, paste0(nm_stub, ".csv"))
-        write.csv(dat.ls[[i]], out_path, row.names = FALSE)
+        write.csv(dat_piece, out_path, row.names = FALSE)
       }
 
       out_map[[length(out_map)+1]] <- list(
