@@ -15,7 +15,7 @@ compile_sweddie <- function(DIR = "~/sweddie_db", varNames = NULL, exp_name = NU
   stopifnot(dir.exists(DB_DIR))
 
   # get metadata
-  meta <- compile_meta(DIR)
+  meta <- compile_meta(DIR, EOL_err = TRUE)
 
   if (!is.null(exp_name)) {
     meta <- meta[exp_name]
@@ -60,6 +60,8 @@ compile_sweddie <- function(DIR = "~/sweddie_db", varNames = NULL, exp_name = NU
       }
     }
     selVars <- varNames[ix]
+  } else {
+    selVars <- varNames
   }
 
   # Map each experiment to the FLMD table

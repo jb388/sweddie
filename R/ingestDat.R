@@ -289,7 +289,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
 
     var_stub <- names(dat.ls)[i]
     nm_stub  <- paste(var_stub, base_stub, sep = "_")
-    nm_stub <- gsub("/", " ", nm_stub, fixed = TRUE) # remove slashes
+    nm_stub <- sanitize_str(nm_stub)
 
     # resolve duplicates
     if (any(startsWith(list.files(DATA_DIR), nm_stub))) {
