@@ -67,14 +67,14 @@ compile_sweddie <- function(DIR = "~/sweddie_db", varNames = NULL, exp_name = NU
   }), nm = names(meta))
   flmd_ls <- Filter(function(x) !is.null(x) && nrow(x) > 0, flmd_ls)
 
-  # duplicate file check fx
+  # multiple file check fx
   select_rows <- function(subdf, varName, expName) {
     if (nrow(subdf) == 1) return(subdf)
     cat("\nVariable:", varName, "\nExperiment:", expName, "\nMultiple files detected:\n")
     print(subdf[, c("fileName","sit_name","startDate","endDate","notes")], row.names=FALSE)
     repeat {
-      input <- readline("Select file indices to ingest (comma or range, 0=cancel): ")
-      if (input == "0") stop("User cancelled.")
+      input <- readline("Select file indices to ingest (comma or range, 0 =  ingest all files): ")
+      if (input == "0") return(subdf)
       ix <- parse_indices(input, nrow(subdf))
       return(subdf[ix, , drop = FALSE])
     }
@@ -94,7 +94,7 @@ compile_sweddie <- function(DIR = "~/sweddie_db", varNames = NULL, exp_name = NU
   }
 
   # read data and dd files
-  setNames(lapply(seq_along(flmd_ls_filtered), function(i) {
+  ls<-setNames(lapply(seq_along(flmd_ls_filtered), function(i) {
 
     exp_name <- names(flmd_ls_filtered)[i]
     exp_path <- file.path(DB_DIR, exp_name)
