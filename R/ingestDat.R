@@ -363,7 +363,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
       original_cols[which(names(original_cols) == "data")] <- ix.dat[i]
     }
 
-    dd_rows <- dd[original_cols, , drop = FALSE]
+    dd_rows <- dd[match(names(dat)[original_cols], dd$colName), , drop = FALSE]
     dd_rows$colName <- dat_cols
 
     if (sum(dd_rows$dataType == "date", na.rm = TRUE) != 1) {
