@@ -26,8 +26,8 @@ read_csv_cmp <- function(path, ...) {
   if (grepl("\\.gz$", path, ignore.case = TRUE)) {
     con <- gzfile(path, open = "rt")
     on.exit(close(con), add = TRUE)
-    df<-read.csv(con, ...)
+    read.csv(con, ...)
   } else {
-    df<-read.csv(path, ...)
+    read.csv(path, ...)
   }
 }
