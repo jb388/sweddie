@@ -291,7 +291,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     names(dat.sub) <- new_names
 
     return(dat.sub)
-  }), nm = dat.nms.in)
+  }), names = dat.nms.in)
   out_map <- list()
   for (i in seq_along(dat.ls)) {
 
