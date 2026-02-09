@@ -5,45 +5,29 @@
 #' @return file
 #' @details runs 'read.csv' and decompresses GZ files as needed
 #' @importFrom utils read.csv
-#' @importFrom readr guess_encoding
+#' @importFrom readr read_lines
 #' @export
 read_csv_cmp <- function(path, ...) {
 
-  # resolve extension
+  # If path has no extension, try .csv then .csv.gz
   if (!grepl("\\.(csv|csv\\.gz)$", path, ignore.case = TRUE)) {
-    if (file.exists(paste0(path, ".csv"))) {
-      path <- paste0(path, ".csv")
-    } else if (file.exists(paste0(path, ".csv.gz"))) {
-      path <- paste0(path, ".csv.gz")
+    path_csv <- paste0(path, ".csv")
+    path_csv_gz <- paste0(path, ".csv.gz")
+
+    if (file.exists(path_csv)) {
+      path <- path_csv
+    } else if (file.exists(path_csv_gz)) {
+      path <- path_csv_gz
     } else {
-      stop("File not found: ", path)
+      stop("File not found: ", path, "(.csv or .csv.gz)")
     }
   }
 
-  # read file
   if (grepl("\\.gz$", path, ignore.case = TRUE)) {
-    # for gz files: read as raw Latin1 to avoid hangs
-    con <- gzfile(path, "rt")
+    con <- gzfile(path, open = "rt")
     on.exit(close(con), add = TRUE)
-    out <- tryCatch(
-      read.csv(con, fileEncoding = "latin1", ..., stringsAsFactors = FALSE, quote = ""),
-      error = function(e) stop("Failed to read gz file: ", path, "\n", e$message)
-    )
+    df<-read.csv(con, ...)
   } else {
-    # regular files: try UTF-8 first, fallback to Latin1
-    out <- tryCatch(
-      read.csv(path, fileEncoding = "UTF-8", ..., stringsAsFactors = FALSE, quote = ""),
-      error = function(e) {
-        read.csv(path, fileEncoding = "latin1", ..., stringsAsFactors = FALSE, quote = "")
-      }
-    )
+    df<-read.csv(path, ...)
   }
-
-  # convert to UTF-8 to normalize
-  out[] <- lapply(out, function(col) {
-    if (is.character(col)) iconv(col, from = "latin1", to = "UTF-8")
-    else col
-  })
-
-  out
 }
