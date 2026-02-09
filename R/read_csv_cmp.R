@@ -20,34 +20,30 @@ read_csv_cmp <- function(path, ...) {
     }
   }
 
-  # guess encoding
-  enc_guess <- tryCatch(
-    readr::guess_encoding(path, n_max = 10000)$encoding[1],
-    error = function(e) "UTF-8"
-  )
-
-  # get ...
-  base_args <- list(...)
-
-  read_attempt <- function(enc) {
-    args <- c(base_args, list(fileEncoding = enc))
-
-    if (grepl("\\.gz$", path, ignore.case = TRUE)) {
-      con <- gzfile(path, open = "rt")
-      on.exit(close(con), add = TRUE)
-      args$file <- con
-    } else {
-      args$file <- path
-    }
-
-    do.call(read.csv, args)
+  # read file
+  if (grepl("\\.gz$", path, ignore.case = TRUE)) {
+    # for gz files: read as raw Latin1 to avoid hangs
+    con <- gzfile(path, "rt")
+    on.exit(close(con), add = TRUE)
+    out <- tryCatch(
+      read.csv(con, fileEncoding = "latin1", ..., stringsAsFactors = FALSE, quote = ""),
+      error = function(e) stop("Failed to read gz file: ", path, "\n", e$message)
+    )
+  } else {
+    # regular files: try UTF-8 first, fallback to Latin1
+    out <- tryCatch(
+      read.csv(path, fileEncoding = "UTF-8", ..., stringsAsFactors = FALSE, quote = ""),
+      error = function(e) {
+        read.csv(path, fileEncoding = "latin1", ..., stringsAsFactors = FALSE, quote = "")
+      }
+    )
   }
 
-  tryCatch(
-    read_attempt(enc_guess),
-    error = function(e) {
-      message("Retrying with Windows-1252 encoding")
-      read_attempt("Windows-1252")
-    }
-  )
+  # convert to UTF-8 to normalize
+  out[] <- lapply(out, function(col) {
+    if (is.character(col)) iconv(col, from = "latin1", to = "UTF-8")
+    else col
+  })
+
+  out
 }
