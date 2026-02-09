@@ -8,7 +8,7 @@
 #' @param compress should data files be compressed (TRUE by default)
 #' @param ... used internally for optional arguments passed to function
 #' @details interactive function for harmonizing raw data which outputs dat files and their dd files, and optionally updates FLMD
-#' @importFrom stats na.omit
+#' @importFrom stats na.omit setNames
 #' @importFrom utils menu write.csv head
 #' @importFrom lubridate ymd_hms
 #' @export
@@ -224,7 +224,7 @@ ingestDat <- function(DIR = "~/sweddie_db", expName, path.dat.csv, path.dd.csv, 
     }
     ix.var <- get_valid_indices(dat, "variance")
     vcl.nms <- names(dat)[ix.var]
-    vcl.dat.nms <- setNames(vector(mode = "list", length = length(ix.var)), nm = vcl.nms)
+    vcl.dat.nms <- setNames(vector(mode = "list", length = length(ix.var)), vcl.nms)
     dat.nms <- names(dat[ix.dat[which(!(ix.dat %in% ix.var))]])
     for (i in seq_along(vcl.nms)) {
       ix <- menu(
